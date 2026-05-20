@@ -1,0 +1,48 @@
+﻿namespace SamaBoutique.Server.Models.DTOs
+{
+    public record LoginRequest(string Email, string Password);
+    public record RegisterClientRequest(
+    string Nom,
+    string Email,
+    string Password,
+    string? Telephone,
+    string? Adresse,
+    DateTime? DateNaissance
+);
+
+    public record RegisterUserRequest(
+        string Nom,
+        string Email,
+        string Password,
+        Guid RoleId,
+        string? Poste,
+        decimal CommissionPct
+    );
+
+    public record RefreshTokenRequest(string RefreshToken);
+
+    public record ChangePasswordRequest(
+        string CurrentPassword,
+        string NewPassword,
+        string ConfirmNewPassword
+    );
+
+    public record ForgotPasswordRequest(string Email);
+    public record ResetPasswordRequest(string Token, string NewPassword, string ConfirmNewPassword);
+
+    public record LoginResponse(
+        string AccessToken,
+        string RefreshToken,
+        DateTime ExpiresAt,
+        UserInfoDto User
+    );
+
+    public record UserInfoDto(
+        Guid Id,
+        string Nom,
+        string Email,
+        string Role,
+        List<string> Permissions
+    );
+
+}

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Éléments de solution/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="samaboutique.client/samaboutique.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="SamaBoutique.Server/SamaBoutique.Server.csproj" />
+</Solution>
