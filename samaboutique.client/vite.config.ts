@@ -36,7 +36,7 @@ const target = env.ASPNETCORE_HTTPS_PORT
     ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}`
     : env.ASPNETCORE_URLS
         ? env.ASPNETCORE_URLS.split(';')[0]
-        : 'https://localhost:7088';
+        : 'http://localhost:5011';
 
 export default defineConfig({
     plugins: [
