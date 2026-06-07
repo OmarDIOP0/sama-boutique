@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&display=swap');
 
 /* Fonts */
 body {
@@ -73,6 +74,17 @@ h1, h2, h3, .display, .font-display {
     --sama-gold: #C4A82D;
     --sama-blue: #2D6BC4;
     --sama-green: #2DC47A;
+
+    /* === STOREFRONT WURUS TOKENS === */
+    --w-bg: #FFF8EE;
+    --w-gold: #C7932D;
+    --w-dark: #513102;
+    --w-surface: #FFFFFF;
+    --w-muted: rgba(81,49,2,0.55);
+
+    /* Wurus typography */
+    --font-wurus-body: 'Bricolage Grotesque', 'Instrument Sans', sans-serif;
+    --font-wurus-display: 'Playfair Display', Georgia, serif;
 
     /* Sidebar — light theme */
     --sidebar: #FAFAF8;
@@ -199,6 +211,55 @@ h1, h2, h3, .display, .font-display {
 
 /* ── Glassmorphism utility ─────────────────────────────────────────── */
 @layer utilities {
+    /* === WURUS STOREFRONT UTILITIES === */
+    .wurus-bg {
+        background-color: #FFF8EE;
+        background-image: linear-gradient(#51310208 1px, transparent 1px), linear-gradient(90deg, #51310208 1px, transparent 1px);
+        background-size: 4rem 4rem;
+    }
+    .wurus-card {
+        background: rgba(255,255,255,0.80);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(81,49,2,0.08);
+        border-radius: 1.5rem;
+        box-shadow: 0 30px 80px -20px rgba(81,49,2,0.10);
+    }
+    .wurus-btn-primary {
+        background: #513102;
+        color: #FFF8EE;
+        border-radius: 9999px;
+        font-weight: 700;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .wurus-btn-primary:hover { background: #3d2509; transform: translateY(-1px); }
+    .wurus-btn-gold {
+        background: linear-gradient(to right, #C7932D, #b08024);
+        color: #FFF8EE;
+        border-radius: 9999px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 32px rgba(199,147,45,0.35);
+        transition: all 0.2s;
+    }
+    .wurus-btn-gold:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .wurus-input {
+        height: 56px;
+        border-radius: 14px;
+        border: 1.5px solid rgba(199,147,45,0.30);
+        background: white;
+        font-size: 16px;
+        padding: 0 1rem;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        width: 100%;
+        display: block;
+    }
+    .wurus-input:focus {
+        border-color: #C7932D;
+        box-shadow: 0 0 0 3px rgba(199,147,45,0.20);
+    }
+
     .glass {
         @apply bg-white/60 backdrop-blur-md border border-white/20;
     }

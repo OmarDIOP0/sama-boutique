@@ -56,12 +56,12 @@ function RelatedCard({ p, currentId, index }: { p: any; currentId?: string; inde
                     )}
                 </div>
                 <div style={{ marginTop: 10, paddingLeft: 2 }}>
-                    <p style={{ fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9A8675", fontWeight: 600 }}>
+                    <p style={{ fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(81,49,2,0.55)", fontWeight: 600 }}>
                         {p.categoryNom}
                     </p>
-                    <p style={{ fontSize: 13.5, fontWeight: 500, color: "#1A1410", marginTop: 3, lineHeight: 1.4 }}
+                    <p style={{ fontSize: 13.5, fontWeight: 500, color: "#513102", marginTop: 3, lineHeight: 1.4 }}
                         className="line-clamp-2">{p.nom}</p>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#B84D22", marginTop: 5 }}>{formatPrice(pPrice)}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#C7932D", marginTop: 5 }}>{formatPrice(pPrice)}</p>
                 </div>
             </Link>
         </motion.div>
@@ -118,7 +118,7 @@ export default function ProductDetail() {
     }
     if (!product) {
         return (
-            <div style={{ padding: 64, textAlign: "center", color: "#9A8675" }}>Produit introuvable</div>
+            <div style={{ padding: 64, textAlign: "center", color: "rgba(81,49,2,0.55)" }}>Produit introuvable</div>
         );
     }
 
@@ -128,18 +128,17 @@ export default function ProductDetail() {
     return (
         <>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,600;1,500&family=Inter:wght@400;500;600;700&display=swap');
-
-        .pd-root { font-family: 'Inter', system-ui, sans-serif; }
+        /* Wurus ProductDetail */
+        .pd-root { font-family: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif; }
 
         .pd-back {
           display: inline-flex; align-items: center; gap: 6px;
           font-size: 13px; font-weight: 500;
-          color: #9A8675;
+          color: rgba(81,49,2,0.55);
           transition: color 0.18s;
           padding: 6px 0;
         }
-        .pd-back:hover { color: #1A1410; }
+        .pd-back:hover { color: #513102; }
 
         /* Main image zoom */
         .pd-main-img {
@@ -151,34 +150,34 @@ export default function ProductDetail() {
         /* Thumbnail */
         .pd-thumb {
           border-radius: 10px; object-fit: cover;
-          width: 68px; height: 68px; flex-shrink: 0;
+          width: 64px; height: 64px; flex-shrink: 0;
           cursor: pointer;
           border: 2px solid transparent;
           transition: all 0.2s;
         }
-        .pd-thumb:hover { border-color: rgba(184,77,34,0.4); }
+        .pd-thumb:hover { border-color: rgba(199,147,45,0.50); }
         .pd-thumb.active {
-          border-color: #B84D22;
-          box-shadow: 0 0 0 3px rgba(184,77,34,0.15);
+          border-color: #C7932D;
+          box-shadow: 0 0 0 3px rgba(199,147,45,0.20);
         }
 
         /* Variant pill */
         .pd-variant {
           padding: 7px 14px; border-radius: 10px;
           font-size: 13px; font-weight: 500;
-          border: 1.5px solid rgba(90,74,58,0.14);
-          background: white; color: #5A4A3A;
+          border: 1.5px solid rgba(81,49,2,0.14);
+          background: white; color: rgba(81,49,2,0.70);
           cursor: pointer; transition: all 0.2s;
         }
         .pd-variant:hover:not(:disabled) {
-          border-color: #B84D22;
-          color: #B84D22;
-          background: rgba(184,77,34,0.04);
+          border-color: #C7932D;
+          color: #C7932D;
+          background: rgba(199,147,45,0.06);
         }
         .pd-variant.selected {
-          border-color: #B84D22;
-          background: rgba(184,77,34,0.08);
-          color: #B84D22;
+          border-color: #C7932D;
+          background: rgba(199,147,45,0.08);
+          color: #513102;
           font-weight: 600;
         }
         .pd-variant:disabled {
@@ -190,10 +189,10 @@ export default function ProductDetail() {
         .pd-qty-btn {
           width: 34px; height: 34px; border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
-          background: #F5F0EA; color: #5A4A3A;
+          background: #F5F0EA; color: rgba(81,49,2,0.65);
           transition: all 0.18s; flex-shrink: 0;
         }
-        .pd-qty-btn:hover { background: #EDE7DF; color: #1A1410; }
+        .pd-qty-btn:hover { background: #EDE7DF; color: #513102; }
 
         /* Add to cart */
         .pd-atc {
@@ -205,20 +204,20 @@ export default function ProductDetail() {
           position: relative; overflow: hidden;
         }
         .pd-atc.default {
-          background: #1A1410; color: white;
+          background: #513102; color: #FFF8EE;
         }
         .pd-atc.default:hover:not(:disabled) {
-          background: #B84D22;
-          box-shadow: 0 6px 24px rgba(184,77,34,0.4);
+          background: #3d2509;
+          box-shadow: 0 6px 24px rgba(81,49,2,0.35);
           transform: translateY(-1px);
         }
         .pd-atc.success { background: #2D7A4F; color: white; }
-        .pd-atc:disabled { background: #EDE7DF; color: #9A8675; cursor: not-allowed; }
+        .pd-atc:disabled { background: #EDE7DF; color: rgba(81,49,2,0.40); cursor: not-allowed; }
 
         /* Trust badges */
         .pd-trust {
           display: flex; align-items: center; gap: 8px;
-          font-size: 12.5px; color: #9A8675;
+          font-size: 12.5px; color: rgba(81,49,2,0.55);
           padding: 10px 14px; border-radius: 10px;
           background: #F5F0EA;
           flex: 1;
@@ -272,7 +271,7 @@ export default function ProductDetail() {
           height: 420px;
           max-height: 65vh;
           border-radius: 20px;
-          background: #F0EBE3;
+          background: #F5F0EA;
           overflow: hidden;
           position: relative;
         }
@@ -283,7 +282,7 @@ export default function ProductDetail() {
         /* Section divider */
         .pd-divider {
           border: none; height: 1px;
-          background: linear-gradient(to right, transparent, rgba(90,74,58,0.1) 30%, rgba(90,74,58,0.1) 70%, transparent);
+          background: linear-gradient(to right, transparent, rgba(81,49,2,0.08) 30%, rgba(81,49,2,0.08) 70%, transparent);
           margin: 0;
         }
 
@@ -291,18 +290,18 @@ export default function ProductDetail() {
         .pd-action-icon {
           width: 46px; height: 46px; border-radius: 12px;
           display: flex; align-items: center; justify-content: center;
-          border: 1.5px solid rgba(90,74,58,0.12);
-          background: white; color: #9A8675;
+          border: 1.5px solid rgba(81,49,2,0.12);
+          background: white; color: rgba(81,49,2,0.55);
           transition: all 0.2s; flex-shrink: 0;
         }
         .pd-action-icon:hover {
-          border-color: #B84D22;
-          color: #B84D22;
-          background: rgba(184,77,34,0.05);
+          border-color: #C7932D;
+          color: #C7932D;
+          background: rgba(199,147,45,0.06);
         }
       `}</style>
 
-            <div className="pd-root" style={{ background: "#FDFAF7", minHeight: "100vh" }}>
+            <div className="pd-root wurus-bg" style={{ minHeight: "100vh" }}>
                 <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 28px" }}>
 
                     {/* ── Breadcrumb / back ──────────────────────────────────────────── */}
@@ -316,10 +315,10 @@ export default function ProductDetail() {
                             <ArrowLeft style={{ width: 15, height: 15 }} />
                             Retour
                         </button>
-                        <span style={{ margin: "0 8px", color: "rgba(90,74,58,0.3)", fontSize: 13 }}>·</span>
-                        <span style={{ fontSize: 13, color: "#9A8675" }}>{product.categoryNom}</span>
-                        <span style={{ margin: "0 8px", color: "rgba(90,74,58,0.3)", fontSize: 13 }}>·</span>
-                        <span style={{ fontSize: 13, color: "#5A4A3A", fontWeight: 500 }}
+                        <span style={{ margin: "0 8px", color: "rgba(81,49,2,0.25)", fontSize: 13 }}>·</span>
+                        <span style={{ fontSize: 13, color: "rgba(81,49,2,0.55)" }}>{product.categoryNom}</span>
+                        <span style={{ margin: "0 8px", color: "rgba(81,49,2,0.25)", fontSize: 13 }}>·</span>
+                        <span style={{ fontSize: 13, color: "#513102", fontWeight: 500 }}
                             className="line-clamp-1">{product.nom}</span>
                     </motion.div>
 
@@ -368,7 +367,7 @@ export default function ProductDetail() {
                                             display: "flex", alignItems: "center", justifyContent: "center",
                                         }}>
                                             <span style={{
-                                                background: "#1A1410", color: "white",
+                                                background: "#513102", color: "white",
                                                 padding: "8px 20px", borderRadius: 10,
                                                 fontSize: 13, fontWeight: 600, letterSpacing: "0.04em",
                                             }}>ÉPUISÉ</span>
@@ -392,8 +391,8 @@ export default function ProductDetail() {
                                         background: "rgba(253,250,247,0.92)", backdropFilter: "blur(8px)",
                                         padding: "5px 10px", borderRadius: 8,
                                     }}>
-                                        <Tag style={{ width: 11, height: 11, color: "#B84D22" }} />
-                                        <span style={{ fontSize: 11, fontWeight: 600, color: "#5A4A3A", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                                        <Tag style={{ width: 11, height: 11, color: "#C7932D" }} />
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(81,49,2,0.70)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                                             {product.categoryNom}
                                         </span>
                                     </div>
@@ -441,14 +440,14 @@ export default function ProductDetail() {
                             >
                                 {/* Header */}
                                 <motion.div variants={fadeUp}>
-                                    <p style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#B84D22", marginBottom: 8 }}>
+                                    <p style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C7932D", marginBottom: 8 }}>
                                         {product.categoryNom}
                                     </p>
                                     <h1 style={{
-                                        fontFamily: "'Cormorant', Georgia, serif",
+                                        fontFamily: "'Playfair Display', Georgia, serif",
                                         fontSize: "clamp(28px, 3.5vw, 40px)",
-                                        fontWeight: 600, lineHeight: 1.15,
-                                        color: "#1A1410", marginBottom: 14,
+                                        fontWeight: 700, lineHeight: 1.15,
+                                        color: "#513102", marginBottom: 14,
                                     }}>
                                         {product.nom}
                                     </h1>
@@ -456,9 +455,9 @@ export default function ProductDetail() {
                                     {/* Price */}
                                     <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                                         <span style={{
-                                            fontSize: 34, fontWeight: 800,
-                                            color: "#1A1410", lineHeight: 1,
-                                            fontFamily: "'Inter', sans-serif",
+                                            fontSize: 32, fontWeight: 800,
+                                            color: "#513102", lineHeight: 1,
+                                            fontFamily: "'Bricolage Grotesque', sans-serif",
                                         }}>
                                             {formatPrice(price)}
                                         </span>
@@ -501,10 +500,10 @@ export default function ProductDetail() {
                                 {/* Variants */}
                                 {product.variants.length > 1 && (
                                     <motion.div variants={fadeUp}>
-                                        <p style={{ fontSize: 12.5, fontWeight: 600, color: "#5A4A3A", marginBottom: 10, letterSpacing: "0.04em" }}>
+                                        <p style={{ fontSize: 12.5, fontWeight: 600, color: "rgba(81,49,2,0.70)", marginBottom: 10, letterSpacing: "0.04em" }}>
                                             Variante sélectionnée
                                             {variant && (
-                                                <span style={{ marginLeft: 6, fontWeight: 400, color: "#9A8675" }}>
+                                                <span style={{ marginLeft: 6, fontWeight: 400, color: "rgba(81,49,2,0.55)" }}>
                                                     — {[variant.taille, variant.couleur].filter(Boolean).join(" / ") || "Standard"}
                                                 </span>
                                             )}
@@ -530,7 +529,7 @@ export default function ProductDetail() {
 
                                 {/* Quantity + Add to cart */}
                                 <motion.div variants={fadeUp}>
-                                    <p style={{ fontSize: 12.5, fontWeight: 600, color: "#5A4A3A", marginBottom: 10, letterSpacing: "0.04em" }}>
+                                    <p style={{ fontSize: 12.5, fontWeight: 600, color: "rgba(81,49,2,0.70)", marginBottom: 10, letterSpacing: "0.04em" }}>
                                         Quantité
                                     </p>
                                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -549,7 +548,7 @@ export default function ProductDetail() {
                                             </button>
                                             <span style={{
                                                 width: 42, textAlign: "center",
-                                                fontSize: 15, fontWeight: 700, color: "#1A1410",
+                                                fontSize: 15, fontWeight: 700, color: "#513102",
                                             }}>
                                                 {quantity}
                                             </span>
@@ -653,7 +652,7 @@ export default function ProductDetail() {
                                         { icon: Shield, label: "Paiement sécurisé" },
                                     ].map(({ icon: Icon, label }) => (
                                         <div key={label} className="pd-trust">
-                                            <Icon style={{ width: 15, height: 15, color: "#B84D22", flexShrink: 0 }} />
+                                            <Icon style={{ width: 15, height: 15, color: "#C7932D", flexShrink: 0 }} />
                                             <span>{label}</span>
                                         </div>
                                     ))}
@@ -668,7 +667,7 @@ export default function ProductDetail() {
                                         borderRadius: 14, padding: "16px 18px",
                                     }}
                                 >
-                                    <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9A8675", marginBottom: 12 }}>
+                                    <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(81,49,2,0.55)", marginBottom: 12 }}>
                                         Détails produit
                                     </p>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
@@ -679,8 +678,8 @@ export default function ProductDetail() {
                                             { k: "Disponible", v: inStock ? "Oui" : "Non" },
                                         ].map(({ k, v }) => (
                                             <div key={k}>
-                                                <p style={{ fontSize: 11, color: "#9A8675", fontWeight: 500, marginBottom: 2 }}>{k}</p>
-                                                <p style={{ fontSize: 13, color: "#1A1410", fontWeight: 600 }}>{v}</p>
+                                                <p style={{ fontSize: 11, color: "rgba(81,49,2,0.55)", fontWeight: 500, marginBottom: 2 }}>{k}</p>
+                                                <p style={{ fontSize: 13, color: "#513102", fontWeight: 600 }}>{v}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -703,17 +702,18 @@ export default function ProductDetail() {
                                 style={{ marginBottom: 32, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}
                             >
                                 <div>
-                                    <p style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "#9A8675", fontWeight: 600, marginBottom: 6 }}>
+                                    <p style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(81,49,2,0.55)", fontWeight: 600, marginBottom: 6 }}>
                                         Découvrir aussi
                                     </p>
                                     <h2 style={{
-                                        fontFamily: "'Cormorant', Georgia, serif",
-                                        fontSize: 30, fontWeight: 600, color: "#1A1410", lineHeight: 1.1,
+                                        fontFamily: "'Playfair Display', Georgia, serif",
+                                        fontSize: 30, fontWeight: 700, color: "#513102", lineHeight: 1.1,
+                                        fontStyle: "italic",
                                     }}>
                                         Vous aimerez aussi
                                     </h2>
                                 </div>
-                                <Link to="/catalogue" style={{ fontSize: 13, fontWeight: 600, color: "#B84D22", display: "flex", alignItems: "center", gap: 4 }}>
+                                <Link to="/catalogue" style={{ fontSize: 13, fontWeight: 600, color: "#C7932D", display: "flex", alignItems: "center", gap: 4 }}>
                                     Voir tout →
                                 </Link>
                             </motion.div>

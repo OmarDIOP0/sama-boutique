@@ -3,7 +3,7 @@ import { LogOut, ArrowRight, Package, ShoppingBag, User, ChevronRight } from "lu
 import { useOrders } from "@/hooks/useOrders";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLogout } from "@/hooks/useAuth";
-import { formatPrice, formatDate, cn } from "@/lib/utils";
+import { formatPrice, formatDate } from "@/lib/utils";
 
 /* ── Status helpers ─────────────────────────────────────────────────────────── */
 const STATUS_MAP: Record<string, { label: string; bg: string; text: string; dot: string }> = {
@@ -15,7 +15,7 @@ const STATUS_MAP: Record<string, { label: string; bg: string; text: string; dot:
 };
 
 function StatusBadge({ statut }: { statut: string }) {
-    const s = STATUS_MAP[statut] ?? { label: statut, bg: "rgba(0,0,0,0.04)", text: "var(--sama-warm-muted)", dot: "#9A8A7A" };
+    const s = STATUS_MAP[statut] ?? { label: statut, bg: "rgba(81,49,2,0.04)", text: "rgba(81,49,2,0.55)", dot: "rgba(81,49,2,0.40)" };
     return (
         <span
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold tracking-wide"
@@ -37,24 +37,19 @@ export default function Account() {
     const initial = user?.nom?.[0]?.toUpperCase() ?? "?";
 
     return (
-        <div
-            className="min-h-screen"
-            style={{
-                backgroundImage:
-                    "repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(184,77,34,0.025) 8px, rgba(184,77,34,0.025) 9px)",
-            }}
-        >
+        <div className="min-h-screen wurus-bg">
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
                 {/* ── Section title ────────────────────────────────────────────────── */}
                 <div className="flex items-center gap-2.5">
-                    <div className="w-1 h-5 rounded-full" style={{ background: "var(--sama-terra, #B84D22)" }} />
+                    <div className="w-1 h-5 rounded-full" style={{ background: "#C7932D" }} />
                     <h1
                         style={{
                             fontSize: 18,
                             fontWeight: 700,
                             fontFamily: "'Playfair Display', Georgia, serif",
                             fontStyle: "italic",
+                            color: "#513102",
                         }}
                     >
                         Mon compte
@@ -62,23 +57,16 @@ export default function Account() {
                 </div>
 
                 {/* ── Profile card ─────────────────────────────────────────────────── */}
-                <div
-                    className="rounded-2xl p-6 sm:p-7"
-                    style={{
-                        background: "rgba(255,255,255,0.75)",
-                        backdropFilter: "blur(12px)",
-                        border: "1px solid rgba(0,0,0,0.06)",
-                    }}
-                >
+                <div className="wurus-card p-6 sm:p-7">
                     <div className="flex flex-wrap items-center gap-5">
                         {/* Avatar */}
                         <div
                             className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-                            style={{ background: "rgba(184,77,34,0.08)" }}
+                            style={{ background: "rgba(199,147,45,0.10)" }}
                         >
                             <span
                                 className="text-xl font-bold"
-                                style={{ color: "var(--sama-terra, #B84D22)", fontFamily: "'Playfair Display', Georgia, serif" }}
+                                style={{ color: "#C7932D", fontFamily: "'Playfair Display', Georgia, serif" }}
                             >
                                 {initial}
                             </span>
@@ -86,17 +74,17 @@ export default function Account() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                            <h2 className="font-bold text-foreground" style={{ fontSize: 16 }}>
+                            <h2 className="font-bold" style={{ fontSize: 16, color: "#513102" }}>
                                 {user?.nom}
                             </h2>
-                            <p style={{ fontSize: 13, color: "var(--sama-warm-muted, #9A8A7A)" }}>
+                            <p style={{ fontSize: 13, color: "rgba(81,49,2,0.55)" }}>
                                 {user?.email}
                             </p>
                             <span
                                 className="inline-block mt-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold tracking-widest uppercase"
                                 style={{
-                                    background: "rgba(184,77,34,0.06)",
-                                    color: "var(--sama-terra, #B84D22)",
+                                    background: "rgba(199,147,45,0.06)",
+                                    color: "#C7932D",
                                     letterSpacing: "0.08em",
                                 }}
                             >
@@ -109,8 +97,8 @@ export default function Account() {
                             onClick={() => logoutMutation.mutate()}
                             className="flex items-center gap-2 h-9 px-4 rounded-full text-[12px] font-medium transition-all hover:opacity-75"
                             style={{
-                                border: "1.5px solid rgba(0,0,0,0.1)",
-                                color: "var(--sama-warm-muted, #9A8A7A)",
+                                border: "1.5px solid rgba(81,49,2,0.12)",
+                                color: "rgba(81,49,2,0.55)",
                                 background: "transparent",
                             }}
                         >
@@ -121,25 +109,18 @@ export default function Account() {
                 </div>
 
                 {/* ── Orders section ───────────────────────────────────────────────── */}
-                <div
-                    className="rounded-2xl overflow-hidden"
-                    style={{
-                        background: "rgba(255,255,255,0.75)",
-                        backdropFilter: "blur(12px)",
-                        border: "1px solid rgba(0,0,0,0.06)",
-                    }}
-                >
+                <div className="wurus-card overflow-hidden">
                     {/* Header */}
                     <div
                         className="px-6 py-4 flex items-center justify-between"
-                        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+                        style={{ borderBottom: "1px solid rgba(81,49,2,0.06)" }}
                     >
                         <div className="flex items-center gap-2.5">
                             <div
                                 className="w-7 h-7 rounded-lg flex items-center justify-center"
-                                style={{ background: "rgba(184,77,34,0.08)" }}
+                                style={{ background: "rgba(199,147,45,0.10)" }}
                             >
-                                <ShoppingBag className="w-3.5 h-3.5" style={{ color: "var(--sama-terra, #B84D22)" }} />
+                                <ShoppingBag className="w-3.5 h-3.5" style={{ color: "#C7932D" }} />
                             </div>
                             <span
                                 style={{
@@ -147,7 +128,7 @@ export default function Account() {
                                     fontWeight: 700,
                                     letterSpacing: "0.1em",
                                     textTransform: "uppercase" as const,
-                                    color: "var(--sama-warm-muted, #9A8A7A)",
+                                    color: "rgba(81,49,2,0.55)",
                                 }}
                             >
                                 Mes commandes
@@ -156,7 +137,7 @@ export default function Account() {
                         {orders.length > 0 && (
                             <span
                                 className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                                style={{ background: "rgba(0,0,0,0.05)", color: "var(--sama-warm-muted, #9A8A7A)" }}
+                                style={{ background: "rgba(199,147,45,0.08)", color: "rgba(81,49,2,0.65)" }}
                             >
                                 {orders.length}
                             </span>
@@ -168,44 +149,46 @@ export default function Account() {
                         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
                             <div
                                 className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                                style={{ background: "rgba(184,77,34,0.08)" }}
+                                style={{ background: "rgba(199,147,45,0.10)" }}
                             >
-                                <Package className="w-6 h-6" style={{ color: "var(--sama-terra, #B84D22)" }} />
+                                <Package className="w-6 h-6" style={{ color: "#C7932D" }} />
                             </div>
-                            <p className="font-bold text-foreground mb-1.5" style={{ fontSize: 15 }}>
+                            <p className="font-bold mb-1.5" style={{ fontSize: 15, color: "#513102" }}>
                                 Aucune commande
                             </p>
-                            <p className="mb-5" style={{ fontSize: 13, color: "var(--sama-warm-muted, #9A8A7A)" }}>
+                            <p className="mb-5" style={{ fontSize: 13, color: "rgba(81,49,2,0.55)" }}>
                                 Vous n'avez pas encore passé de commande
                             </p>
                             <Link
-                                to="/catalogue"
-                                className="inline-flex items-center gap-1.5 h-10 px-6 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
-                                style={{ background: "var(--sama-terra, #B84D22)", color: "white" }}
+                                to="/"
+                                className="inline-flex items-center gap-1.5 h-10 px-6 rounded-full text-[13px] font-semibold transition-all hover:opacity-90 wurus-btn-primary"
                             >
                                 Découvrir le catalogue
                                 <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                         </div>
                     ) : (
-                        <div className="divide-y" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
-                            {orders.map((order, i) => (
+                        <div className="divide-y" style={{ borderColor: "rgba(81,49,2,0.05)" }}>
+                            {orders.map((order) => (
                                 <Link
                                     key={order.id}
                                     to={`/commande/suivi/${order.id}`}
-                                    className="flex items-center justify-between px-6 py-4 group transition-colors hover:bg-[rgba(184,77,34,0.02)]"
+                                    className="flex items-center justify-between px-6 py-4 group transition-colors"
+                                    style={{ background: "transparent" }}
+                                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(199,147,45,0.03)"; }}
+                                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                                 >
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-3 mb-1.5">
                                             <p
                                                 className="font-mono font-bold"
-                                                style={{ fontSize: 13, color: "var(--sama-dark, #0F0C0A)" }}
+                                                style={{ fontSize: 13, color: "#513102" }}
                                             >
                                                 {order.numeroFacture ?? order.id.slice(0, 8).toUpperCase()}
                                             </p>
                                             <StatusBadge statut={order.statut} />
                                         </div>
-                                        <p style={{ fontSize: 12, color: "var(--sama-warm-muted, #9A8A7A)" }}>
+                                        <p style={{ fontSize: 12, color: "rgba(81,49,2,0.55)" }}>
                                             {formatDate(order.createdAt, "dd MMMM yyyy")}
                                         </p>
                                     </div>
@@ -213,17 +196,17 @@ export default function Account() {
                                     <div className="flex items-center gap-3 flex-shrink-0">
                                         <span
                                             className="font-bold"
-                                            style={{ fontSize: 14, color: "var(--sama-terra, #B84D22)" }}
+                                            style={{ fontSize: 14, color: "#C7932D" }}
                                         >
                                             {formatPrice(order.totalTTC)}
                                         </span>
                                         <div
                                             className="w-7 h-7 rounded-full flex items-center justify-center transition-all group-hover:scale-110"
-                                            style={{ background: "rgba(184,77,34,0.06)" }}
+                                            style={{ background: "rgba(199,147,45,0.08)" }}
                                         >
                                             <ChevronRight
-                                                className="w-3.5 h-3.5 transition-colors"
-                                                style={{ color: "var(--sama-warm-muted, #9A8A7A)" }}
+                                                className="w-3.5 h-3.5"
+                                                style={{ color: "rgba(81,49,2,0.45)" }}
                                             />
                                         </div>
                                     </div>

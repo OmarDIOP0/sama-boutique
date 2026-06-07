@@ -27,10 +27,17 @@ namespace SamaBoutique.Server.Services
         }
         public async Task<(LoginResponse?, string?)> LoginAsync(LoginRequest req, string ip)
         {
+            // Cherche d'abord par email, puis par téléphone (format +221XXXXXXXXX)
             var user = await _userRepo.GetByEmailAsync(req.Email);
 
             if (user == null)
-                return (null, "Email ou mot de passe incorrect");
+            {
+                var normalized = req.Email.Replace(" ", "").Trim();
+                user = await _userRepo.GetByTelephoneAsync(normalized);
+            }
+
+            if (user == null)
+                return (null, "Numéro ou mot de passe incorrect");
 
             if (!user.IsActive)
                 return (null, "Compte désactivé. Contactez l'administrateur");
@@ -47,7 +54,7 @@ namespace SamaBoutique.Server.Services
                     user.FailedLoginAttempts = 0;
                 }
                 await _userRepo.SaveChangesAsync();
-                return (null, "Email ou mot de passe incorrect");
+                return (null, "Numéro ou mot de passe incorrect");
             }
 
             user.FailedLoginAttempts = 0;
@@ -187,5 +194,8 @@ namespace SamaBoutique.Server.Services
             var perms = JsonSerializer.Deserialize<List<string>>(user.Role.Permissions) ?? new();
             return new(user.Id, user.Nom, user.Email, user.Role.Nom, perms);
         }
+
+        // Pour les clients : clientId = userId (même entité après migration du seed)
+        // Si besoin d'une vraie séparation, injecter IClientRepository ici
     }
 }

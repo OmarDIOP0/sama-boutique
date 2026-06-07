@@ -66,9 +66,8 @@ export function ClientNavbar() {
         <>
             {/* ── Styles ─────────────────────────────────────────────────────────── */}
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,600;1,500&family=Inter:wght@400;500;600&display=swap');
-
-        .nb-root { font-family: 'Inter', system-ui, sans-serif; }
+        /* Wurus Navbar */
+        .nb-root { font-family: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif; }
 
         /* Ticker */
         .nb-ticker-inner {
@@ -87,7 +86,7 @@ export function ClientNavbar() {
           font-size: 13px;
           font-weight: 500;
           letter-spacing: 0.05em;
-          color: #5A4A3A;
+          color: rgba(81,49,2,0.70);
           padding: 4px 0;
           transition: color 0.2s;
         }
@@ -96,61 +95,61 @@ export function ClientNavbar() {
           position: absolute;
           bottom: -1px; left: 0; right: 100%;
           height: 1.5px;
-          background: #B84D22;
+          background: #C7932D;
           transition: right 0.3s cubic-bezier(.4,0,.2,1);
         }
-        .nb-link:hover, .nb-link.active { color: #1A1410; }
+        .nb-link:hover, .nb-link.active { color: #C7932D; }
         .nb-link:hover::after, .nb-link.active::after { right: 0; }
 
         /* Logo brand */
         .nb-brand {
-          font-family: 'Cormorant', Georgia, serif;
-          font-weight: 600;
+          font-family: 'Playfair Display', Georgia, serif;
+          font-weight: 700;
           font-size: 21px;
-          color: #1A1410;
+          color: #513102;
           line-height: 1;
         }
         .nb-brand em {
           font-style: italic;
-          color: #B84D22;
+          color: #C7932D;
         }
 
         /* Logo mark */
         .nb-mark {
           width: 38px; height: 38px;
-          background: #B84D22;
+          background: #513102;
           border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
-          font-family: 'Cormorant', serif;
-          font-style: italic; font-weight: 600; font-size: 20px;
-          color: white; flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(184,77,34,0.30);
+          font-family: 'Playfair Display', serif;
+          font-style: italic; font-weight: 700; font-size: 20px;
+          color: #FFF8EE; flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(81,49,2,0.30);
           transition: box-shadow 0.2s;
         }
-        a:hover .nb-mark { box-shadow: 0 4px 16px rgba(184,77,34,0.45); }
+        a:hover .nb-mark { box-shadow: 0 4px 16px rgba(81,49,2,0.45); }
 
         /* Search pill */
         .nb-search {
           position: relative;
           height: 42px;
           display: flex; align-items: center;
-          border: 1.5px solid rgba(90,74,58,0.14);
+          border: 1.5px solid rgba(199,147,45,0.25);
           border-radius: 100px;
-          background: #F5F0EA;
+          background: rgba(255,248,238,0.80);
           padding: 0 16px 0 44px;
           transition: width 0.3s ease, border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
         .nb-search.focused {
-          border-color: #B84D22;
+          border-color: #C7932D;
           background: white;
-          box-shadow: 0 0 0 3px rgba(184,77,34,0.09);
+          box-shadow: 0 0 0 3px rgba(199,147,45,0.15);
         }
         .nb-search input {
           background: transparent; border: none; outline: none;
-          font-size: 13.5px; color: #1A1410; width: 100%;
-          font-family: 'Inter', sans-serif;
+          font-size: 13.5px; color: #513102; width: 100%;
+          font-family: 'Bricolage Grotesque', sans-serif;
         }
-        .nb-search input::placeholder { color: #9A8675; }
+        .nb-search input::placeholder { color: rgba(81,49,2,0.40); }
         .nb-search-icon {
           position: absolute; left: 15px; top: 50%;
           transform: translateY(-50%); pointer-events: none;
@@ -162,14 +161,14 @@ export function ClientNavbar() {
           width: 42px; height: 42px;
           border-radius: 12px;
           display: flex; align-items: center; justify-content: center;
-          color: #5A4A3A;
+          color: rgba(81,49,2,0.65);
           transition: all 0.18s;
           flex-shrink: 0;
           position: relative;
         }
         .nb-icon:hover {
-          background: #F5F0EA;
-          color: #1A1410;
+          background: rgba(199,147,45,0.10);
+          color: #513102;
         }
 
         /* WhatsApp hover */
@@ -179,12 +178,12 @@ export function ClientNavbar() {
         .nb-badge {
           position: absolute; top: -3px; right: -3px;
           min-width: 18px; height: 18px;
-          background: #B84D22; color: white;
+          background: #C7932D; color: white;
           font-size: 10px; font-weight: 700;
           border-radius: 100px;
           display: flex; align-items: center; justify-content: center;
           padding: 0 4px;
-          box-shadow: 0 1px 4px rgba(184,77,34,0.4);
+          box-shadow: 0 1px 4px rgba(199,147,45,0.4);
           border: 2px solid white;
         }
 
@@ -192,7 +191,9 @@ export function ClientNavbar() {
         .nb-auth {
           height: 38px; padding: 0 18px;
           border-radius: 100px;
-          background: #1A1410; color: white;
+          background: transparent;
+          border: 1.5px solid rgba(199,147,45,0.40);
+          color: #513102;
           font-size: 13px; font-weight: 600;
           letter-spacing: 0.02em;
           transition: all 0.2s;
@@ -200,23 +201,26 @@ export function ClientNavbar() {
           display: flex; align-items: center;
         }
         .nb-auth:hover {
-          background: #B84D22;
-          box-shadow: 0 3px 14px rgba(184,77,34,0.35);
+          background: #513102;
+          color: #FFF8EE;
+          border-color: #513102;
+          box-shadow: 0 3px 14px rgba(81,49,2,0.25);
           transform: translateY(-1px);
         }
 
         /* User avatar */
         .nb-avatar {
           width: 36px; height: 36px; border-radius: 50%;
-          background: rgba(184,77,34,0.10);
-          border: 2px solid rgba(184,77,34,0.25);
+          background: rgba(199,147,45,0.10);
+          border: 2px solid rgba(199,147,45,0.35);
           display: flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 700; color: #B84D22;
+          font-size: 13px; font-weight: 700; color: #C7932D;
           transition: all 0.2s;
+          font-family: 'Playfair Display', serif;
         }
         .nb-avatar:hover {
-          background: rgba(184,77,34,0.18);
-          border-color: rgba(184,77,34,0.45);
+          background: rgba(199,147,45,0.18);
+          border-color: rgba(199,147,45,0.55);
         }
 
         /* Mobile menu */
@@ -229,7 +233,7 @@ export function ClientNavbar() {
         /* Divider */
         .nb-divider {
           width: 1px; height: 22px;
-          background: rgba(90,74,58,0.10);
+          background: rgba(81,49,2,0.08);
           flex-shrink: 0;
         }
       `}</style>
@@ -247,7 +251,7 @@ export function ClientNavbar() {
                 }}
             >
                 {/* ── Announcement bar ───────────────────────────────────────────── */}
-                <div style={{ background: "#1A1410", height: 30, overflow: "hidden" }}>
+                <div style={{ background: "#513102", height: 30, overflow: "hidden" }}>
                     <div className="nb-ticker-inner h-full items-center">
                         {Array(6).fill(null).map((_, i) => (
                             <span
@@ -270,12 +274,12 @@ export function ClientNavbar() {
                 {/* ── Main navbar ────────────────────────────────────────────────── */}
                 <header
                     style={{
-                        background: "rgba(253,250,247,0.97)",
-                        backdropFilter: "blur(20px)",
+                        background: "rgba(255,248,238,0.92)",
+                        backdropFilter: "blur(12px)",
                         borderBottom: scrolled
-                            ? "1px solid rgba(90,74,58,0.12)"
-                            : "1px solid rgba(90,74,58,0.07)",
-                        boxShadow: scrolled ? "0 2px 20px rgba(90,74,58,0.08)" : "none",
+                            ? "1px solid rgba(81,49,2,0.08)"
+                            : "1px solid rgba(81,49,2,0.04)",
+                        boxShadow: scrolled ? "0 2px 20px rgba(81,49,2,0.06)" : "none",
                         transition: "box-shadow 0.3s, border-color 0.3s",
                     }}
                 >
@@ -288,7 +292,7 @@ export function ClientNavbar() {
                             <div className="nb-mark">S</div>
                             <div className="hidden sm:flex flex-col leading-none">
                                 <span className="nb-brand">Sama<em>Boutique</em></span>
-                                <span style={{ fontSize: 9.5, letterSpacing: "0.2em", color: "#9A8675", textTransform: "uppercase", marginTop: 3 }}>
+                                <span style={{ fontSize: 9.5, letterSpacing: "0.2em", color: "rgba(81,49,2,0.40)", textTransform: "uppercase", marginTop: 3 }}>
                                     Dakar · Sénégal
                                 </span>
                             </div>
@@ -321,7 +325,7 @@ export function ClientNavbar() {
                                     className="nb-search-icon"
                                     style={{
                                         width: 16, height: 16,
-                                        color: searchFocus ? "#B84D22" : "#9A8675",
+                                        color: searchFocus ? "#C7932D" : "rgba(81,49,2,0.40)",
                                     }}
                                 />
                                 <input
@@ -386,10 +390,10 @@ export function ClientNavbar() {
                                 </Link>
                             )}
 
-                            {/* Mobile hamburger */}
+                            {/* Hamburger — all screens */}
                             <button
                                 onClick={() => setMobileOpen(!mobileOpen)}
-                                className="lg:hidden nb-icon ml-1"
+                                className="nb-icon ml-1"
                             >
                                 {mobileOpen
                                     ? <X style={{ width: 18, height: 18 }} />
@@ -398,13 +402,13 @@ export function ClientNavbar() {
                         </div>
                     </div>
 
-                    {/* ── Mobile menu ────────────────────────────────────────────────── */}
+                    {/* ── Mobile / Desktop slide menu ────────────────────────────────── */}
                     {mobileOpen && (
                         <div
-                            className="nb-mobile-menu lg:hidden"
+                            className="nb-mobile-menu"
                             style={{
-                                background: "#FDFAF7",
-                                borderTop: "1px solid rgba(90,74,58,0.08)",
+                                background: "#FFF8EE",
+                                borderTop: "1px solid rgba(81,49,2,0.08)",
                                 padding: "16px 20px 20px",
                             }}
                         >
@@ -413,7 +417,7 @@ export function ClientNavbar() {
                                 <div className={cn("nb-search", "focused")} style={{ width: "100%", minWidth: "unset" }}>
                                     <Search
                                         className="nb-search-icon"
-                                        style={{ width: 16, height: 16, color: "#9A8675" }}
+                                        style={{ width: 16, height: 16, color: "rgba(81,49,2,0.40)" }}
                                     />
                                     <input
                                         value={search}
@@ -437,8 +441,8 @@ export function ClientNavbar() {
                                         onClick={() => setMobileOpen(false)}
                                         className="flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                                         style={{
-                                            color: location.pathname === to ? "#B84D22" : "#5A4A3A",
-                                            background: location.pathname === to ? "rgba(184,77,34,0.07)" : "transparent",
+                                            color: location.pathname === to ? "#C7932D" : "rgba(81,49,2,0.70)",
+                                            background: location.pathname === to ? "rgba(199,147,45,0.08)" : "transparent",
                                         }}
                                     >
                                         {label}
@@ -461,10 +465,10 @@ export function ClientNavbar() {
                 </header>
             </div>
 
-            {/* Mobile backdrop */}
+            {/* Backdrop (all screen sizes) */}
             {mobileOpen && (
                 <div
-                    className="fixed inset-0 z-30 lg:hidden"
+                    className="fixed inset-0 z-30"
                     style={{ background: "rgba(26,20,16,0.25)", backdropFilter: "blur(2px)" }}
                     onClick={() => setMobileOpen(false)}
                 />

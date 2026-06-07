@@ -18,13 +18,13 @@ import type { Product } from "@/types";
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const SAMA_STYLES = `
   :root {
-    --sama-terra: #B84D22;
-    --sama-terra-light: #D97B50;
-    --sama-gold: #C8912A;
-    --sama-gold-light: #E4B55A;
-    --sama-dark: #0F0C0A;
-    --sama-cream: #FAF6EF;
-    --sama-warm-muted: #9A8A7A;
+    --sama-terra: #C7932D;
+    --sama-terra-light: #d4a545;
+    --sama-gold: #C7932D;
+    --sama-gold-light: #d4a545;
+    --sama-dark: #513102;
+    --sama-cream: #FFF8EE;
+    --sama-warm-muted: rgba(81,49,2,0.55);
   }
 
   @keyframes shimmer {
@@ -32,7 +32,7 @@ const SAMA_STYLES = `
     to   { background-position: -200% center; }
   }
   .sama-skeleton {
-    background: linear-gradient(90deg, #F0EBE4 25%, #E5DDD4 50%, #F0EBE4 75%);
+    background: linear-gradient(90deg, #F5F0E8 25%, #EDE7DC 50%, #F5F0E8 75%);
     background-size: 400% 100%;
     animation: shimmer 1.6s ease infinite;
     border-radius: 10px;
@@ -53,21 +53,21 @@ const SAMA_STYLES = `
   }
   .sama-card:hover .sama-wishlist-btn, .sama-wishlist-btn.active { opacity: 1; transform: scale(1); }
 
-  .sama-filter-section { border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .sama-filter-section { border-bottom: 1px solid rgba(81,49,2,0.07); }
 
   .sama-chip {
     display: inline-flex; align-items: center; gap: 4px;
     padding: 3px 10px; border-radius: 100px;
     font-size: 11.5px; font-weight: 500;
-    background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.55);
-    border: 1px solid rgba(0,0,0,0.06);
+    background: rgba(81,49,2,0.05); color: rgba(81,49,2,0.65);
+    border: 1px solid rgba(199,147,45,0.18);
   }
 
   .sama-pattern-bg {
-  background-color: #FDFBF8;
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0 Q35 25 20 50 Q5 25 20 0Z' fill='%23B84D22' opacity='0.05'/%3E%3Cpath d='M70 50 Q85 75 70 100 Q55 75 70 50Z' fill='%23C8912A' opacity='0.045'/%3E%3Ccircle cx='50' cy='50' r='1.5' fill='%23B84D22' opacity='0.1'/%3E%3Ccircle cx='0' cy='50' r='1' fill='%23B84D22' opacity='0.08'/%3E%3Ccircle cx='100' cy='0' r='1' fill='%23C8912A' opacity='0.06'/%3E%3C/svg%3E");
-}
+    background-color: #FFF8EE;
+    background-image: linear-gradient(#51310208 1px, transparent 1px), linear-gradient(90deg, #51310208 1px, transparent 1px);
+    background-size: 4rem 4rem;
+  }
 
   @keyframes heartPop {
     0%   { transform: scale(1); }
@@ -90,7 +90,7 @@ const SAMA_STYLES = `
 
   /* Category card hover */
   .cat-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-  .cat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .cat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(81,49,2,0.10); }
 `;
 
 const SORT_OPTIONS = [
@@ -178,8 +178,8 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     };
 
     return (
-        <Link to={`/produit/${product.id}`} className="sama-card block group">
-            <div className="relative overflow-hidden" style={{ borderRadius: 10, background: "#F2EDE6", aspectRatio: "1/1" }}>
+        <Link to={`/produit/${product.id}`} className="sama-card block group wurus-card hover:-translate-y-1 transition-all duration-300">
+            <div className="relative overflow-hidden" style={{ borderRadius: "16px 16px 0 0", background: "#F5F0EA", aspectRatio: "3/4" }}>
                 {product.photos[0] ? (
                     <img
                         src={product.photos[0]} alt={product.nom} loading="lazy"
@@ -188,18 +188,18 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-7 h-7" style={{ color: "rgba(0,0,0,0.08)" }} />
+                        <Package className="w-7 h-7" style={{ color: "rgba(81,49,2,0.10)" }} />
                     </div>
                 )}
 
                 {/* Gradient */}
-                <div className="absolute inset-x-0 bottom-0 h-14 pointer-events-none" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.15), transparent)" }} />
+                <div className="absolute inset-x-0 bottom-0 h-14 pointer-events-none" style={{ background: "linear-gradient(to top, rgba(81,49,2,0.10), transparent)" }} />
 
                 {/* Category */}
                 {product.categoryNom && (
                     <div
-                        className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase"
-                        style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(6px)", color: "var(--sama-terra)", letterSpacing: "0.06em" }}
+                        className="absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold tracking-widest uppercase"
+                        style={{ background: "rgba(199,147,45,0.15)", backdropFilter: "blur(6px)", color: "#513102", letterSpacing: "0.08em" }}
                     >
                         {product.categoryNom}
                     </div>
@@ -207,8 +207,8 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
                 {!inStock && (
                     <div
-                        className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded text-[8px] font-bold uppercase"
-                        style={{ background: "rgba(0,0,0,0.72)", color: "rgba(255,255,255,0.9)" }}
+                        className="absolute top-2 right-2 px-2 py-0.5 rounded text-[8px] font-bold uppercase"
+                        style={{ background: "rgba(81,49,2,0.72)", color: "rgba(255,248,238,0.9)" }}
                     >
                         Épuisé
                     </div>
@@ -217,27 +217,26 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                 {/* Wishlist */}
                 <button
                     onClick={handleWishlist}
-                    className={cn("sama-wishlist-btn absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center", isFav && "active")}
-                    style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)" }}
+                    className={cn("sama-wishlist-btn absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center", isFav && "active")}
+                    style={{ background: "rgba(255,248,238,0.92)", backdropFilter: "blur(8px)" }}
                 >
-                    <Heart ref={heartRef} className="w-3.5 h-3.5" style={{ color: isFav ? "#ef4444" : "rgba(0,0,0,0.4)", fill: isFav ? "#ef4444" : "none" }} />
+                    <Heart ref={heartRef} className="w-3.5 h-3.5" style={{ color: isFav ? "#ef4444" : "rgba(81,49,2,0.45)", fill: isFav ? "#ef4444" : "none" }} />
                 </button>
 
                 {/* Actions */}
-                <div className="sama-cart-btn absolute bottom-1.5 inset-x-1.5 flex items-center gap-1">
+                <div className="sama-cart-btn absolute bottom-2 inset-x-2 flex items-center gap-1">
                     {inStock && (
                         <button
                             onClick={handleAddToCart}
-                            className="w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-transform flex-shrink-0"
-                            style={{ background: "var(--sama-terra)", color: "white" }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-transform flex-shrink-0 wurus-btn-primary"
                         >
-                            <ShoppingCart className="w-3 h-3" />
+                            <ShoppingCart className="w-3.5 h-3.5" />
                         </button>
                     )}
                     <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/produit/${product.id}`); }}
                         className="flex-1 h-7 rounded-full flex items-center justify-center gap-1 text-[10px] font-semibold shadow-md"
-                        style={{ background: "rgba(15,12,10,0.82)", backdropFilter: "blur(8px)", color: "white" }}
+                        style={{ background: "rgba(81,49,2,0.82)", backdropFilter: "blur(8px)", color: "#FFF8EE" }}
                     >
                         <ArrowRight className="w-2.5 h-2.5" /> Voir
                     </button>
@@ -245,17 +244,17 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             </div>
 
             {/* Info */}
-            <div className="mt-2 px-0.5">
-                <p className="text-foreground leading-snug line-clamp-1 font-medium" style={{ fontSize: 12.5 }}>
+            <div className="mt-2 px-3 pb-3">
+                <p className="leading-snug line-clamp-1 font-medium" style={{ fontSize: 12.5, color: "#513102" }}>
                     {product.nom}
                 </p>
-                <div className="flex items-center justify-between mt-0.5">
-                    <span className={cn("font-bold", !inStock && "line-through opacity-40")} style={{ fontSize: 13, color: "var(--sama-terra)" }}>
+                <div className="flex items-center justify-between mt-1">
+                    <span className={cn("font-bold", !inStock && "line-through opacity-40")} style={{ fontSize: 13, color: "#C7932D", fontWeight: 700 }}>
                         {formatPrice(price)}
                     </span>
                     <div className="flex items-center gap-1">
                         <div className="w-1.5 h-1.5 rounded-full" style={{ background: inStock ? "#22C55E" : "#EF4444" }} />
-                        <span style={{ fontSize: 9.5, color: "var(--sama-warm-muted)" }}>
+                        <span style={{ fontSize: 9.5, color: "rgba(81,49,2,0.55)" }}>
                             {inStock ? "En stock" : "Épuisé"}
                         </span>
                     </div>
@@ -543,10 +542,10 @@ function CategoryCards({ categories, onSelect }: {
     if (categories.length === 0) return null;
 
     return (
-        <section className="px-5 xl:px-10 py-6 sama-pattern-bg" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+        <section className="px-5 xl:px-10 py-6 wurus-bg" style={{ borderBottom: "1px solid rgba(81,49,2,0.06)" }}>
             <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-1 h-5 rounded-full" style={{ background: "var(--sama-terra)" }} />
-                <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic" }}>
+                <div className="w-1 h-5 rounded-full" style={{ background: "#C7932D" }} />
+                <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", color: "#513102" }}>
                     Catégories
                 </h2>
             </div>
@@ -555,10 +554,10 @@ function CategoryCards({ categories, onSelect }: {
                 <button
                     onClick={() => onSelect(undefined)}
                     className="cat-card flex-none px-5 py-3 rounded-xl text-center"
-                    style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.08)", minWidth: 90 }}
+                    style={{ background: "#513102", border: "1.5px solid #513102", minWidth: 90 }}
                 >
-                    <span className="block text-[12px] font-bold" style={{ color: "var(--sama-dark)" }}>Tout</span>
-                    <span className="text-[10px]" style={{ color: "var(--sama-warm-muted)" }}>voir</span>
+                    <span className="block text-[12px] font-bold" style={{ color: "#FFF8EE" }}>Tout</span>
+                    <span className="text-[10px]" style={{ color: "rgba(255,248,238,0.70)" }}>voir</span>
                 </button>
                 {categories.map((cat, i) => {
                     const color = CAT_COLORS[i % CAT_COLORS.length];
@@ -567,10 +566,10 @@ function CategoryCards({ categories, onSelect }: {
                             key={cat.id}
                             onClick={() => onSelect(cat.id)}
                             className="cat-card flex-none px-5 py-3 rounded-xl text-center"
-                            style={{ background: color.bg, border: `1.5px solid ${color.accent}22`, minWidth: 100 }}
+                            style={{ background: "rgba(81,49,2,0.05)", border: "1.5px solid rgba(199,147,45,0.20)", minWidth: 100 }}
                         >
-                            <span className="block text-[12px] font-bold" style={{ color: color.accent }}>{cat.nom}</span>
-                            <span className="text-[10px] font-medium" style={{ color: `${color.accent}99` }}>
+                            <span className="block text-[12px] font-bold" style={{ color: "#513102" }}>{cat.nom}</span>
+                            <span className="text-[10px] font-medium" style={{ color: "rgba(81,49,2,0.55)" }}>
                                 {cat.nbProduits} article{cat.nbProduits > 1 ? "s" : ""}
                             </span>
                         </button>
@@ -591,15 +590,15 @@ function NewArrivalsRow({ products }: { products: Product[] }) {
     if (products.length === 0) return null;
 
     return (
-        <section className="px-5 xl:px-10 py-6" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+        <section className="px-5 xl:px-10 py-6 wurus-bg" style={{ borderBottom: "1px solid rgba(81,49,2,0.06)" }}>
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-1 h-5 rounded-full" style={{ background: "var(--sama-gold, #C8912A)" }} />
-                    <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic" }}>
+                    <div className="w-1 h-5 rounded-full" style={{ background: "#C7932D" }} />
+                    <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", color: "#513102" }}>
                         Nouveautés
                     </h2>
                 </div>
-                <Link to="/catalogue" className="flex items-center gap-1 text-[12px] font-medium hover:opacity-75 transition-opacity" style={{ color: "var(--sama-terra)" }}>
+                <Link to="/catalogue" className="flex items-center gap-1 text-[12px] font-medium hover:opacity-75 transition-opacity" style={{ color: "#C7932D" }}>
                     Tout voir <ArrowRight className="w-3 h-3" />
                 </Link>
             </div>
@@ -610,22 +609,22 @@ function NewArrivalsRow({ products }: { products: Product[] }) {
                         return (
                             <div key={product.id} className="flex-none w-28 sm:w-32">
                                 <Link to={`/produit/${product.id}`} className="block group sama-card">
-                                    <div className="relative overflow-hidden" style={{ borderRadius: 8, aspectRatio: "1/1", background: "#F2EDE6" }}>
+                                    <div className="relative overflow-hidden" style={{ borderRadius: 12, aspectRatio: "1/1", background: "#F5F0EA" }}>
                                         {product.photos[0] ? (
                                             <img src={product.photos[0]} alt={product.nom} loading="lazy" className="sama-product-img w-full h-full" style={{ objectFit: "cover", objectPosition: "center" }} />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5" style={{ color: "rgba(0,0,0,0.08)" }} /></div>
+                                            <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5" style={{ color: "rgba(81,49,2,0.10)" }} /></div>
                                         )}
                                         {product.categoryNom && (
                                             <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wide"
-                                                style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(4px)", color: "var(--sama-terra)" }}>
+                                                style={{ background: "rgba(199,147,45,0.15)", backdropFilter: "blur(4px)", color: "#513102" }}>
                                                 {product.categoryNom}
                                             </div>
                                         )}
                                     </div>
                                     <div className="mt-1.5 px-0.5">
-                                        <p className="font-medium line-clamp-1 text-foreground" style={{ fontSize: 11.5 }}>{product.nom}</p>
-                                        <p className="font-bold mt-0.5" style={{ fontSize: 12, color: "var(--sama-terra)" }}>{formatPrice(price)}</p>
+                                        <p className="font-medium line-clamp-1" style={{ fontSize: 11.5, color: "#513102" }}>{product.nom}</p>
+                                        <p className="font-bold mt-0.5" style={{ fontSize: 12, color: "#C7932D" }}>{formatPrice(price)}</p>
                                     </div>
                                 </Link>
                             </div>
@@ -676,8 +675,8 @@ function ScrollToTop() {
     if (!visible) return null;
     return (
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-            style={{ background: "var(--sama-terra)", color: "white" }}>
+            className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform wurus-btn-primary"
+            >
             <ArrowUp className="w-4 h-4" />
         </button>
     );
@@ -831,7 +830,7 @@ export default function Home() {
 
             {hasActiveFilters && (
                 <button onClick={resetFilters} className="w-full mt-1 h-7 rounded-lg text-[11px] font-semibold transition-all"
-                    style={{ border: "1.5px solid rgba(184,77,34,0.25)", color: "var(--sama-terra)", background: "rgba(184,77,34,0.04)" }}>
+                    style={{ border: "1.5px solid rgba(199,147,45,0.30)", color: "var(--sama-terra)", background: "rgba(199,147,45,0.06)" }}>
                     Réinitialiser
                 </button>
             )}
@@ -853,10 +852,10 @@ export default function Home() {
             {/* ── New arrivals ── */}
             {/* {showHero && <NewArrivalsRow products={data?.data ?? []} />} */}
 
-            <div className="flex min-h-screen sama-pattern-bg">
+            <div className="flex min-h-screen wurus-bg">
                 {/* ── Desktop sidebar ── */}
                 <aside className="hidden lg:block w-52 xl:w-56 shrink-0 sticky self-start overflow-y-auto px-4 py-5"
-                    style={{ top: 70, height: "calc(100vh - 70px)", borderRight: "1px solid rgba(0,0,0,0.06)", background: "#fdfbf8" }}>
+                    style={{ top: 70, height: "calc(100vh - 70px)", borderRight: "1px solid rgba(81,49,2,0.07)", background: "rgba(255,255,255,0.80)", backdropFilter: "blur(12px)" }}>
                     <div className="flex items-center justify-between mb-4">
                         <h2 style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Filtres</h2>
                         {hasActiveFilters && <div className="w-2 h-2 rounded-full" style={{ background: "var(--sama-terra)" }} />}
@@ -926,7 +925,7 @@ export default function Home() {
                             <p className="text-muted-foreground mb-4" style={{ fontSize: 12.5 }}>Modifiez vos filtres</p>
                             {hasActiveFilters && (
                                 <button onClick={resetFilters} className="px-4 py-1.5 rounded-full text-[12px] font-semibold"
-                                    style={{ border: "1.5px solid rgba(184,77,34,0.3)", color: "var(--sama-terra)" }}>
+                                    style={{ border: "1.5px solid rgba(199,147,45,0.30)", color: "var(--sama-terra)" }}>
                                     Réinitialiser
                                 </button>
                             )}
@@ -963,7 +962,7 @@ export default function Home() {
             {mobileFiltersOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">
                     <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }} onClick={() => setMobileFiltersOpen(false)} />
-                    <div className="absolute left-0 top-0 bottom-0 w-64 overflow-y-auto px-4 py-5 shadow-2xl" style={{ background: "var(--sama-cream)" }}>
+                    <div className="absolute left-0 top-0 bottom-0 w-64 overflow-y-auto px-4 py-5 shadow-2xl" style={{ background: "#FFF8EE" }}>
                         <div className="flex items-center justify-between mb-5">
                             <h2 style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Filtres</h2>
                             <button onClick={() => setMobileFiltersOpen(false)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,0,0,0.05)" }}>

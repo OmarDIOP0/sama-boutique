@@ -7,6 +7,17 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Mot de passe requis"),
 });
 
+// Login client par numéro de téléphone sénégalais
+export const phoneLoginSchema = z.object({
+  phone: z
+    .string()
+    .min(9, "Numéro trop court")
+    .regex(/^(70|75|76|77|78)\d{7}$/, "Numéro invalide — ex : 77 123 45 67"),
+  password: z.string().min(1, "Mot de passe requis"),
+});
+
+export type PhoneLoginFormData = z.infer<typeof phoneLoginSchema>;
+
 export const registerSchema = z.object({
   nom: z.string().min(2, "Nom trop court (min 2 caractères)"),
   email: z.string().email("Email invalide"),
@@ -106,10 +117,9 @@ export const orderSchema = z.object({
 
 export const checkoutSchema = z.object({
   nom: z.string().min(2, "Nom requis"),
-  email: z.string().email("Email invalide"),
-  telephone: z.string().min(8, "Téléphone requis"),
+  region: z.string().min(1, "Région requise"),
+  departement: z.string().optional(),
   adresse: z.string().min(5, "Adresse requise"),
-  notes: z.string().optional(),
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────

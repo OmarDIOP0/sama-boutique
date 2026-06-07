@@ -10,12 +10,14 @@ namespace SamaBoutique.Server.Services
     {
         private readonly IOrderRepository _repo;
         private readonly IClientRepository _clientRepo;
+        private readonly IStockRepository _stockRepo;
         private static readonly HashSet<string> ValidStatuts = new() { "EnAttente", "Confirmee", "EnPreparation", "Expediee", "Livree", "Annulee", "Retournee" };
 
-        public OrderService(IOrderRepository repo, IClientRepository clientRepo)
+        public OrderService(IOrderRepository repo, IClientRepository clientRepo, IStockRepository stockRepo)
         {
             _repo = repo;
             _clientRepo = clientRepo;
+            _stockRepo = stockRepo;
         }
 
         public async Task<PagedResponse<OrderResponse>> GetAllAsync(int page, int pageSize, string? statut, Guid? clientId)
@@ -37,6 +39,19 @@ namespace SamaBoutique.Server.Services
             if (!await _clientRepo.ExistsAsync(req.ClientId))
                 return (null, $"Client introuvable (Id: {req.ClientId})");
 
+            // ── Vérifier et déduire le stock pour chaque variante ─────────────────
+            var variantCache = new Dictionary<Guid, ProductVariant>();
+            foreach (var item in req.Items)
+            {
+                var variant = await _stockRepo.GetVariantAsync(item.VariantId);
+                if (variant == null)
+                    return (null, $"Variante introuvable (Id: {item.VariantId})");
+                if (variant.StockActuel < item.Quantite)
+                    return (null, $"Stock insuffisant pour « {variant.Product?.Nom ?? item.VariantId.ToString()} » " +
+                                  $"(disponible : {variant.StockActuel}, demandé : {item.Quantite})");
+                variantCache[item.VariantId] = variant;
+            }
+
             var order = new Order
             {
                 ClientId = req.ClientId,
@@ -56,6 +71,26 @@ namespace SamaBoutique.Server.Services
             order.TotalTTC = order.TotalHT;
 
             await _repo.AddAsync(order);
+
+            // ── Déduire le stock après création de la commande ───────────────────
+            foreach (var item in req.Items)
+            {
+                var variant = variantCache[item.VariantId];
+                variant.StockActuel -= item.Quantite;
+
+                // Enregistrer un mouvement de stock
+                await _stockRepo.AddAsync(new StockMovement
+                {
+                    VariantId = item.VariantId,
+                    Type = "Sortie",
+                    Quantite = item.Quantite,
+                    Motif = $"Commande {order.NumeroFacture}",
+                    StockAvant = variant.StockActuel + item.Quantite,
+                    StockApres = variant.StockActuel,
+                    UserId = req.ClientId, // Id utilisateur client
+                });
+            }
+
             await _repo.SaveChangesAsync();
             return (await GetByIdAsync(order.Id), null);
         }
