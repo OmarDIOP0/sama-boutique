@@ -5,12 +5,14 @@ import {
   Store, CreditCard, Truck, Bell, User, Shield,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Plus, Trash2 } from "lucide-react";
 import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/validators";
 import { useChangePassword } from "@/hooks/useAuth";
 import { useUIStore } from "@/stores/ui.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSettingsStore } from "@/stores/settings.store";
 import { AdminPageHeader } from "@/components/admin/ui";
-import { cn, roleLabel } from "@/lib/utils";
+import { cn, roleLabel, formatPrice } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
 const GOLD = "#C7932D";
@@ -59,30 +61,23 @@ const SECTIONS = [
   { id: "securite", label: "Sécurité", icon: Shield },
 ] as const;
 
-const DELIVERY_ZONES = [
-  { zone: "Dakar (Plateau, Médina, Almadies…)", fee: "1 000 F", delay: "24h" },
-  { zone: "Banlieue (Pikine, Guédiawaye, Rufisque)", fee: "1 500 F", delay: "24-48h" },
-  { zone: "Thiès / Mbour", fee: "2 000 F", delay: "48h" },
-  { zone: "Autres régions", fee: "2 500 – 5 000 F", delay: "2-4 jours" },
-];
-
 function Card({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
     <div className="admin-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-4" style={{ borderBottom: "1px solid rgba(81,49,2,0.06)" }}>
-        <Icon className="w-4 h-4" style={{ color: GOLD }} />
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: DARK }}>{title}</h3>
+      <div className="flex items-center gap-2.5 px-6 py-5" style={{ borderBottom: "1px solid rgba(81,49,2,0.06)" }}>
+        <Icon className="w-5 h-5" style={{ color: GOLD }} />
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: DARK }}>{title}</h3>
       </div>
-      <div className="p-5">{children}</div>
+      <div className="p-6">{children}</div>
     </div>
   );
 }
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", height: 46, borderRadius: 12, padding: "0 14px",
-  border: "1.5px solid rgba(81,49,2,0.14)", background: "white", fontSize: 15, color: DARK, outline: "none",
+  width: "100%", height: 50, borderRadius: 12, padding: "0 16px",
+  border: "1.5px solid rgba(81,49,2,0.14)", background: "white", fontSize: 16, color: DARK, outline: "none",
 };
-const labelStyle: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(81,49,2,0.55)", marginBottom: 8 };
+const labelStyle: React.CSSProperties = { display: "block", fontSize: 14, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(81,49,2,0.55)", marginBottom: 8 };
 
 export default function Settings() {
   const { user } = useAuthStore();
@@ -93,6 +88,11 @@ export default function Settings() {
   const saved = loadAppearance();
   const [colorTheme, setColorTheme] = useState<ColorThemeId>(saved.colorTheme);
   const [fontSize, setFontSize] = useState<FontSizeId>(saved.fontSize);
+
+  // Zones de livraison (store persisté)
+  const { zones, freeDeliveryThreshold, setZoneFee, setZoneDelai, addZone, removeZone, setFreeThreshold } = useSettingsStore();
+  const [newZoneNom, setNewZoneNom] = useState("");
+  const [newZoneFee, setNewZoneFee] = useState(2000);
 
   useEffect(() => { applyColorTheme(colorTheme); applyFontSize(fontSize); }, []);
 
@@ -233,27 +233,77 @@ export default function Settings() {
             </Card>
           )}
 
-          {/* ── Livraison ── */}
+          {/* ── Livraison (éditable) ── */}
           {active === "livraison" && (
             <Card title="Zones de livraison" icon={Truck}>
-              <div className="space-y-2">
-                {DELIVERY_ZONES.map((z) => (
-                  <div key={z.zone} className="flex items-center justify-between p-3.5 rounded-xl" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(81,49,2,0.06)" }}>
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Truck className="w-4 h-4 flex-shrink-0" style={{ color: GOLD }} />
-                      <span className="truncate" style={{ fontSize: 14, fontWeight: 500, color: DARK }}>{z.zone}</span>
+              <p style={{ fontSize: 14, color: "rgba(81,49,2,0.55)", marginBottom: 16 }}>
+                Configurez les lieux de livraison et leurs tarifs. Ces frais s'appliquent automatiquement au paiement client.
+              </p>
+              <div className="space-y-2.5">
+                {zones.map((z) => (
+                  <div key={z.id} className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(81,49,2,0.06)" }}>
+                    <Truck className="w-5 h-5 flex-shrink-0" style={{ color: GOLD }} />
+                    <span className="flex-1 min-w-0 truncate" style={{ fontSize: 15, fontWeight: 600, color: DARK }}>{z.nom}</span>
+                    {/* Délai */}
+                    <input
+                      value={z.delai}
+                      onChange={(e) => setZoneDelai(z.id, e.target.value)}
+                      className="text-center outline-none"
+                      style={{ width: 80, height: 40, borderRadius: 10, border: "1.5px solid rgba(81,49,2,0.12)", fontSize: 14, color: "rgba(81,49,2,0.65)" }}
+                      placeholder="24h"
+                    />
+                    {/* Frais */}
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number" min={0} step={500}
+                        value={z.fee}
+                        onChange={(e) => setZoneFee(z.id, Number(e.target.value))}
+                        className="text-right outline-none"
+                        style={{ width: 90, height: 40, borderRadius: 10, border: `1.5px solid ${GOLD}40`, fontSize: 15, fontWeight: 700, color: GOLD, paddingRight: 8 }}
+                      />
+                      <span style={{ fontSize: 13, color: "rgba(81,49,2,0.45)" }}>F</span>
                     </div>
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                      <span style={{ fontSize: 12.5, color: "rgba(81,49,2,0.50)" }}>{z.delay}</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>{z.fee}</span>
-                    </div>
+                    <button onClick={() => removeZone(z.id)} aria-label="Supprimer"
+                      className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+                      style={{ color: "rgba(81,49,2,0.45)", cursor: "pointer" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.10)"; (e.currentTarget as HTMLElement).style.color = "#DC2626"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(81,49,2,0.45)"; }}>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
-                <div className="flex items-center justify-between p-3.5 rounded-xl mt-2" style={{ background: "rgba(45,122,79,0.05)", border: "1px solid rgba(45,122,79,0.15)" }}>
-                  <p style={{ fontSize: 13.5, fontWeight: 500, color: DARK }}>🎁 Livraison gratuite dès 50 000 F</p>
-                  <span className="admin-badge admin-badge-success"><Check className="w-3 h-3" /> Activé</span>
-                </div>
               </div>
+
+              {/* Ajouter une zone */}
+              <div className="flex flex-wrap items-center gap-2 mt-4 p-3.5 rounded-xl" style={{ background: "rgba(199,147,45,0.05)", border: "1px dashed rgba(199,147,45,0.30)" }}>
+                <input value={newZoneNom} onChange={(e) => setNewZoneNom(e.target.value)} placeholder="Nouvelle zone (ex: Kaolack)"
+                  className="flex-1 min-w-40 outline-none" style={{ height: 42, borderRadius: 10, border: "1.5px solid rgba(81,49,2,0.12)", padding: "0 12px", fontSize: 15, color: DARK }} />
+                <input type="number" min={0} step={500} value={newZoneFee} onChange={(e) => setNewZoneFee(Number(e.target.value))} placeholder="Frais"
+                  className="outline-none text-right" style={{ width: 100, height: 42, borderRadius: 10, border: "1.5px solid rgba(81,49,2,0.12)", padding: "0 10px", fontSize: 15, color: DARK }} />
+                <button onClick={() => {
+                  if (newZoneNom.trim().length < 2) { toast.error("Nom de zone requis"); return; }
+                  addZone({ nom: newZoneNom.trim(), fee: newZoneFee, delai: "48h" });
+                  setNewZoneNom(""); setNewZoneFee(2000); toast.success("Zone ajoutée");
+                }} className="admin-btn-gold" style={{ height: 42 }}>
+                  <Plus className="w-4 h-4" /> Ajouter
+                </button>
+              </div>
+
+              {/* Livraison gratuite */}
+              <div className="flex items-center justify-between gap-3 p-4 rounded-xl mt-4" style={{ background: "rgba(45,122,79,0.05)", border: "1px solid rgba(45,122,79,0.15)" }}>
+                <div className="flex items-center gap-2">
+                  <span style={{ fontSize: 15, fontWeight: 600, color: DARK }}>🎁 Livraison gratuite dès</span>
+                  <input type="number" min={0} step={5000} value={freeDeliveryThreshold}
+                    onChange={(e) => setFreeThreshold(Number(e.target.value))}
+                    className="text-right outline-none" style={{ width: 110, height: 40, borderRadius: 10, border: "1.5px solid rgba(45,122,79,0.30)", fontSize: 15, fontWeight: 700, color: "#2D7A4F", paddingRight: 8 }} />
+                  <span style={{ fontSize: 14, color: "rgba(81,49,2,0.55)" }}>F CFA</span>
+                </div>
+                <span style={{ fontSize: 13, color: "rgba(81,49,2,0.45)" }}>{freeDeliveryThreshold > 0 ? formatPrice(freeDeliveryThreshold) : "Désactivé"}</span>
+              </div>
+
+              <p style={{ fontSize: 12.5, color: "rgba(81,49,2,0.45)", marginTop: 12 }}>
+                💾 Les modifications sont enregistrées automatiquement.
+              </p>
             </Card>
           )}
 

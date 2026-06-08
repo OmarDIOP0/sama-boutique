@@ -470,8 +470,11 @@ export default function Checkout() {
     if (cart.items.length === 0 && !orderCreated) { navigate("/panier"); return null; }
 
     const regionInfo = REGIONS_DATA[selectedRegion];
-    const deliveryFee = deliveryMode === "relais" ? 0 : (regionInfo?.fee ?? 1000);
     const subtotal = cart.total();
+    // Frais de livraison depuis les zones configurées par l'admin (Paramètres)
+    const configuredFee = settings.feeFor(selectedRegion);
+    const qualifiesFree = settings.freeDeliveryThreshold > 0 && subtotal >= settings.freeDeliveryThreshold;
+    const deliveryFee = (deliveryMode === "relais" || qualifiesFree) ? 0 : configuredFee;
     const grandTotal = subtotal + deliveryFee;
     const deptOptions = Object.keys(regionInfo?.departements ?? {});
     const communeOptions = selectedDept ? (regionInfo?.departements[selectedDept] ?? []) : [];
