@@ -120,6 +120,24 @@ namespace SamaBoutique.Server.Services
             };
             await _saleRepo.AddAsync(sale);
 
+            // ── Fidélité : 1 point par tranche de 1000 FCFA ──────────────────────
+            var points = (int)(order.TotalTTC / 1000);
+            if (points > 0)
+            {
+                var client = await _clientRepo.GetByIdAsync(req.ClientId);
+                if (client != null)
+                {
+                    client.PointsFidelite += points;
+                    client.Segment = client.PointsFidelite switch
+                    {
+                        >= 5000 => "VIP",
+                        >= 1000 => "Régulier",
+                        _ => "Nouveau"
+                    };
+                    await _clientRepo.UpdateAsync(client);
+                }
+            }
+
             await _repo.SaveChangesAsync();
             return (await GetByIdAsync(order.Id), null);
         }

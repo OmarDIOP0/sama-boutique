@@ -15,6 +15,22 @@ namespace SamaBoutique.Server.Repositories
         public async Task<int> GetNbVentesAsync(DateTime from, DateTime to)
             => await _db.Sales.CountAsync(s => s.Date >= from && s.Date <= to && s.Statut == "Complétée");
 
+        // Clients distincts ayant acheté sur la période
+        public async Task<int> GetNbClientsActifsAsync(DateTime from, DateTime to)
+            => await _db.Sales
+                .Where(s => s.Date >= from && s.Date <= to && s.Statut == "Complétée" && s.ClientId.HasValue)
+                .Select(s => s.ClientId)
+                .Distinct()
+                .CountAsync();
+
+        // Variantes en rupture (stock = 0)
+        public async Task<int> GetNbProduitsEnRuptureAsync()
+            => await _db.ProductVariants.CountAsync(v => v.StockActuel == 0);
+
+        // Variantes en alerte (stock <= seuil minimum, mais pas forcément 0)
+        public async Task<int> GetNbProduitsEnAlerteAsync()
+            => await _db.ProductVariants.CountAsync(v => v.StockActuel <= v.StockMinimum);
+
         public async Task<List<(Guid, string, string, int, decimal, decimal)>> GetTopProductsAsync(int top, DateTime? from, DateTime? to)
         {
             var q = _db.SaleItems.Include(si => si.Variant).ThenInclude(v => v.Product).ThenInclude(p => p.Category)

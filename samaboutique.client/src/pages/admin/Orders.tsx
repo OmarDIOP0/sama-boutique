@@ -3,7 +3,8 @@ import { ShoppingBag, Package, Loader2, Check, MapPin, User, Calendar, CreditCar
 import { toast } from "sonner";
 import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { AdminPageHeader, AdminDrawer, AdminStatusBadge } from "@/components/admin/ui";
+import { AdminPageHeader, AdminDrawer, AdminStatusBadge, AdminExportButtons } from "@/components/admin/ui";
+import { exportToCSV, exportToPDF, type ExportColumn } from "@/lib/export";
 import { formatPrice, formatDateTime, cn } from "@/lib/utils";
 import type { Order, OrderStatus } from "@/types";
 
@@ -42,7 +43,32 @@ export default function Orders() {
   const [selected, setSelected] = useState<Order | null>(null);
 
   const { data, isLoading } = useOrders({ page, pageSize: 15, statut: statusFilter || undefined });
+  // Export : toutes les commandes filtrées
+  const { data: allData } = useOrders({ page: 1, pageSize: 1000, statut: statusFilter || undefined });
   const updateStatusMutation = useUpdateOrderStatus();
+
+  // ── Export ──
+  const exportRows = allData?.data ?? [];
+  const exportCols: ExportColumn<Order>[] = [
+    { header: "Référence", value: (o) => o.numeroFacture ?? o.id.slice(0, 8).toUpperCase() },
+    { header: "Client", value: (o) => o.clientNom ?? "" },
+    { header: "Montant", value: (o) => o.totalTTC },
+    { header: "Statut", value: (o) => STATUS_LABELS[o.statut] ?? o.statut },
+    { header: "Livraison", value: (o) => o.adresseLivraison ?? "" },
+    { header: "Paiement", value: (o) => o.modePaiement ?? "" },
+    { header: "Date", value: (o) => formatDateTime(o.createdAt) },
+  ];
+  const handleExportCSV = () => { exportToCSV("commandes", exportCols, exportRows); toast.success("Export CSV téléchargé"); };
+  const handleExportPDF = () => {
+    exportToPDF("Liste des commandes", exportCols, exportRows, {
+      subtitle: `${exportRows.length} commande(s)${statusFilter ? ` · ${STATUS_LABELS[statusFilter]}` : ""}`,
+      summary: [
+        { label: "Commandes", value: `${exportRows.length}` },
+        { label: "Montant total", value: formatPrice(exportRows.reduce((s, o) => s + o.totalTTC, 0)) },
+      ],
+    });
+    toast.success("Export PDF téléchargé");
+  };
 
   const columns: Column<Order>[] = [
     {
@@ -84,7 +110,9 @@ export default function Orders() {
 
   return (
     <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
-      <AdminPageHeader icon={ShoppingBag} title="Commandes" subtitle="Gérez les commandes en ligne" />
+      <AdminPageHeader icon={ShoppingBag} title="Commandes" subtitle="Gérez les commandes en ligne">
+        <AdminExportButtons onCSV={handleExportCSV} onPDF={handleExportPDF} />
+      </AdminPageHeader>
 
       {/* Filtres par statut (onglets) */}
       <div className="flex flex-wrap gap-2">

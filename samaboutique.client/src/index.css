@@ -1,8 +1,9 @@
+/* Google Fonts — DOIT être en première position (avant tailwindcss qui injecte des règles) */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&display=swap');
 
 /* Fonts */
 body {
@@ -494,6 +495,18 @@ h1, h2, h3, .display, .font-display {
     --admin-muted:   rgba(81,49,2,0.55);
     --admin-border:  rgba(81,49,2,0.08);
     --admin-hover:   rgba(199,147,45,0.06);
+}
+
+/* Police admin — Bricolage Grotesque sur TOUT (scope + portails modals/drawers) */
+.admin-scope,
+.admin-scope *,
+.admin-modal-backdrop,
+.admin-modal-backdrop *,
+.admin-modal-container,
+.admin-modal-container *,
+.admin-drawer,
+.admin-drawer * {
+    font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif !important;
 }
 
 /* Fond crème + grille subtile */

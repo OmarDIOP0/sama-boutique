@@ -26,8 +26,9 @@ namespace SamaBoutique.Server.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] int page = 1, [FromQuery] int pageSize = 20,
             [FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null,
-            [FromQuery] string? statut = null)
-            => ApiPaged(await _svc.GetAllAsync(page, pageSize, from, to, statut));
+            [FromQuery] string? statut = null, [FromQuery] string? modePaiement = null,
+            [FromQuery] Guid? userId = null)
+            => ApiPaged(await _svc.GetAllAsync(page, pageSize, from, to, statut, modePaiement, userId));
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)

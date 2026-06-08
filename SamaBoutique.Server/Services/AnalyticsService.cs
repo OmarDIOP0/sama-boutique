@@ -33,7 +33,13 @@ namespace SamaBoutique.Server.Services
             var evoCa = caMoisPrec > 0 ? Math.Round((caMois - caMoisPrec) / caMoisPrec * 100, 2) : 0;
             var evoVentes = nbMoisPrec > 0 ? Math.Round((decimal)(nbMois - nbMoisPrec) / nbMoisPrec * 100, 2) : 0;
 
-            return new KpisResponse(caJour, caSemaine, caMois, caAnnee, nbJour, nbMois, panier, 0, 0, 0, evoCa, evoVentes);
+            // KPIs auparavant codés en dur à 0 — maintenant calculés
+            var clientsActifs = await _repo.GetNbClientsActifsAsync(month, now);
+            var produitsEnRupture = await _repo.GetNbProduitsEnRuptureAsync();
+            var produitsEnAlerte = await _repo.GetNbProduitsEnAlerteAsync();
+
+            return new KpisResponse(caJour, caSemaine, caMois, caAnnee, nbJour, nbMois, panier,
+                produitsEnAlerte, produitsEnRupture, clientsActifs, evoCa, evoVentes);
         }
 
         public async Task<List<TopProductResponse>> GetTopProductsAsync(int top, DateTime? from, DateTime? to)

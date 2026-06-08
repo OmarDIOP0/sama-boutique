@@ -107,51 +107,56 @@ export function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
 
-      {pagination && pagination.totalPages > 1 && (
+      {pagination && (
         <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-1">
-          <p className="text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">{pagination.totalCount}</span>{" "}
-            résultat{pagination.totalCount > 1 ? "s" : ""} — page{" "}
-            <span className="font-semibold text-foreground">{pagination.page}</span> /{" "}
-            {pagination.totalPages}
+          {/* Compteur — toujours visible */}
+          <p style={{ fontSize: 13, color: "rgba(81,49,2,0.55)" }}>
+            Affichage{" "}
+            <span style={{ fontWeight: 700, color: "#513102" }}>
+              {pagination.totalCount === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1}
+              –{Math.min(pagination.page * pagination.pageSize, pagination.totalCount)}
+            </span>{" "}
+            sur <span style={{ fontWeight: 700, color: "#513102" }}>{pagination.totalCount}</span> résultat{pagination.totalCount > 1 ? "s" : ""}
           </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onPageChange?.(pagination.page - 1)}
-              disabled={!pagination.hasPrevious}
-              className="w-9 h-9 rounded-xl border border-border/50 flex items-center justify-center text-muted-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            {getPageNumbers(pagination.page, pagination.totalPages).map((page, i) =>
-              page === "…" ? (
-                <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-xs text-muted-foreground">
-                  …
-                </span>
-              ) : (
-                <button
-                  key={page}
-                  onClick={() => onPageChange?.(page as number)}
-                  className={cn(
-                    "w-9 h-9 rounded-xl text-xs font-semibold transition-all",
-                    page === pagination.page
-                      ? "text-white shadow-sm"
-                      : "border border-border/50 text-muted-foreground hover:bg-muted"
-                  )}
-                  style={page === pagination.page ? { background: "#C7932D" } : undefined}
-                >
-                  {page}
-                </button>
-              )
-            )}
-            <button
-              onClick={() => onPageChange?.(pagination.page + 1)}
-              disabled={!pagination.hasNext}
-              className="w-9 h-9 rounded-xl border border-border/50 flex items-center justify-center text-muted-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Navigation — seulement si plusieurs pages */}
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onPageChange?.(pagination.page - 1)}
+                disabled={!pagination.hasPrevious}
+                aria-label="Page précédente"
+                className="w-9 h-9 rounded-xl flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                style={{ border: "1.5px solid rgba(81,49,2,0.15)", color: "#513102", cursor: pagination.hasPrevious ? "pointer" : "not-allowed" }}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {getPageNumbers(pagination.page, pagination.totalPages).map((page, i) =>
+                page === "…" ? (
+                  <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-xs" style={{ color: "rgba(81,49,2,0.40)" }}>…</span>
+                ) : (
+                  <button
+                    key={page}
+                    onClick={() => onPageChange?.(page as number)}
+                    className="w-9 h-9 rounded-xl text-sm font-semibold transition-all"
+                    style={page === pagination.page
+                      ? { background: "#C7932D", color: "white", border: "1.5px solid #C7932D", cursor: "pointer" }
+                      : { border: "1.5px solid rgba(81,49,2,0.15)", color: "#513102", cursor: "pointer" }}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+              <button
+                onClick={() => onPageChange?.(pagination.page + 1)}
+                disabled={!pagination.hasNext}
+                aria-label="Page suivante"
+                className="w-9 h-9 rounded-xl flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                style={{ border: "1.5px solid rgba(81,49,2,0.15)", color: "#513102", cursor: pagination.hasNext ? "pointer" : "not-allowed" }}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

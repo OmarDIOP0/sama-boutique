@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import { useProducts, useDeleteProduct, useCategories } from "@/hooks/useProducts";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import {
-  AdminPageHeader, AdminSearchInput, AdminConfirmDialog, AdminStatusBadge,
+  AdminPageHeader, AdminSearchInput, AdminConfirmDialog, AdminStatusBadge, AdminExportButtons,
 } from "@/components/admin/ui";
+import { exportToCSV, exportToPDF, type ExportColumn } from "@/lib/export";
 import { formatPrice, debounce, cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -47,6 +48,8 @@ export default function Products() {
     statut: statut || undefined,
   });
   const { data: categories = [] } = useCategories();
+  // Export : tous les produits filtrés
+  const { data: allData } = useProducts({ page: 1, pageSize: 1000, search: debouncedSearch || undefined, categoryId, statut: statut || undefined });
   const deleteMutation = useDeleteProduct();
 
   const handleSearch = useCallback(
@@ -54,28 +57,63 @@ export default function Products() {
     []
   );
 
+  // ── Export ──
+  const exportRows = allData?.data ?? [];
+  const exportCols: ExportColumn<Product>[] = [
+    { header: "Produit", value: (p) => p.nom },
+    { header: "Catégorie", value: (p) => p.categoryNom ?? "" },
+    { header: "Prix achat", value: (p) => p.prixAchat },
+    { header: "Prix vente", value: (p) => p.prixVente },
+    { header: "Stock total", value: (p) => p.variants.reduce((s, v) => s + v.stockActuel, 0) },
+    { header: "Statut", value: (p) => p.statut },
+    { header: "Code-barres", value: (p) => p.codeBarres ?? "" },
+  ];
+  const handleExportCSV = () => { exportToCSV("produits", exportCols, exportRows); toast.success("Export CSV téléchargé"); };
+  const handleExportPDF = () => {
+    exportToPDF("Catalogue produits", exportCols, exportRows, {
+      subtitle: `${exportRows.length} produit(s)`,
+    });
+    toast.success("Export PDF téléchargé");
+  };
+
   const columns: Column<Product>[] = [
     {
       key: "nom",
       header: "Produit",
-      render: (row) => (
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(199,147,45,0.08)", border: "1px solid rgba(81,49,2,0.08)" }}>
-            {row.photos[0] ? (
-              <img src={row.photos[0]} alt={row.nom} className="w-full h-full object-cover" />
-            ) : (
-              <Package className="w-5 h-5" style={{ color: "rgba(81,49,2,0.25)" }} />
-            )}
+      render: (row) => {
+        const stockTotal = row.variants.reduce((s, v) => s + v.stockActuel, 0);
+        const alert = stockTotal < 5; // stock bas ou rupture
+        const rupture = stockTotal === 0;
+        return (
+          <div className="flex items-center gap-3">
+            {/* Point pulsant si en alerte stock */}
+            <span className="w-2.5 flex-shrink-0 flex items-center justify-center">
+              {alert && (
+                <span className="relative flex w-2 h-2" title={rupture ? "Rupture de stock" : "Stock bas"}>
+                  <span className="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping"
+                    style={{ background: rupture ? "#DC2626" : "#C7932D" }} />
+                  <span className="relative inline-flex rounded-full w-2 h-2"
+                    style={{ background: rupture ? "#DC2626" : "#C7932D" }} />
+                </span>
+              )}
+            </span>
+            <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(199,147,45,0.08)", border: "1px solid rgba(81,49,2,0.08)" }}>
+              {row.photos[0] ? (
+                <img src={row.photos[0]} alt={row.nom} className="w-full h-full object-cover" />
+              ) : (
+                <Package className="w-5 h-5" style={{ color: "rgba(81,49,2,0.25)" }} />
+              )}
+            </div>
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 600, color: DARK, lineHeight: 1.2 }}>{row.nom}</p>
+              {row.categoryNom && (
+                <p style={{ fontSize: 13, color: "rgba(81,49,2,0.50)", marginTop: 1 }}>{row.categoryNom}</p>
+              )}
+            </div>
           </div>
-          <div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: DARK, lineHeight: 1.2 }}>{row.nom}</p>
-            {row.categoryNom && (
-              <p style={{ fontSize: 13, color: "rgba(81,49,2,0.50)", marginTop: 1 }}>{row.categoryNom}</p>
-            )}
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "prixVente",
@@ -136,6 +174,7 @@ export default function Products() {
   return (
     <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
       <AdminPageHeader icon={Package} title="Produits" subtitle="Gérez votre catalogue">
+        <AdminExportButtons onCSV={handleExportCSV} onPDF={handleExportPDF} />
         <Link to="/admin/products/new" className="admin-btn-gold">
           <Plus className="w-4 h-4" />
           Nouveau produit

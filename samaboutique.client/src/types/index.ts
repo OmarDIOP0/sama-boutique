@@ -242,6 +242,8 @@ export interface SalesFilters {
   from?: string;
   to?: string;
   statut?: string;
+  modePaiement?: string;
+  userId?: string;
 }
 
 // ─── Clients ─────────────────────────────────────────────────────────────────

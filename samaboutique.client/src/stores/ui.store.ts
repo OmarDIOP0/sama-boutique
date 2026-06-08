@@ -3,10 +3,12 @@ import { persist } from "zustand/middleware";
 
 interface Notification {
   id: string;
-  type: "success" | "error" | "warning" | "info";
+  type: "success" | "error" | "warning" | "info" | "payment";
   message: string;
   createdAt: string;
   read: boolean;
+  amount?: number;       // montant du paiement (notifs de type payment)
+  refId?: string;        // id de la vente/commande liée
 }
 
 interface UIState {
@@ -15,6 +17,7 @@ interface UIState {
   notifications: Notification[];
   isOnline: boolean;
   offlineQueueCount: number;
+  lastSeenSaleId: string | null;   // suivi du dernier paiement notifié
 
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
@@ -25,6 +28,7 @@ interface UIState {
   clearNotifications: () => void;
   setOnlineStatus: (online: boolean) => void;
   setOfflineQueueCount: (count: number) => void;
+  setLastSeenSaleId: (id: string | null) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -35,6 +39,7 @@ export const useUIStore = create<UIState>()(
       notifications: [],
       isOnline: true,
       offlineQueueCount: 0,
+      lastSeenSaleId: null,
 
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
@@ -71,10 +76,16 @@ export const useUIStore = create<UIState>()(
 
       setOnlineStatus: (isOnline) => set({ isOnline }),
       setOfflineQueueCount: (count) => set({ offlineQueueCount: count }),
+      setLastSeenSaleId: (id) => set({ lastSeenSaleId: id }),
     }),
     {
       name: "ui-store",
-      partialize: (state) => ({ theme: state.theme, sidebarOpen: state.sidebarOpen }),
+      partialize: (state) => ({
+        theme: state.theme,
+        sidebarOpen: state.sidebarOpen,
+        notifications: state.notifications.slice(0, 50),  // persister les paiements
+        lastSeenSaleId: state.lastSeenSaleId,
+      }),
       onRehydrateStorage: () => (state) => {
         if (state?.theme) {
           document.documentElement.classList.toggle("dark", state.theme === "dark");

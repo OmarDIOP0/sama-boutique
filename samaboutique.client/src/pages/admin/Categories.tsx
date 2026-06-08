@@ -139,7 +139,7 @@ export default function Categories() {
           </span>
         </td>
         <td className="px-5 py-3.5 text-right">
-          <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center justify-end gap-1.5">
             <button onClick={() => openEdit(cat)} title="Modifier" aria-label="Modifier"
               className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
               style={{ color: "rgba(81,49,2,0.55)", cursor: "pointer" }}

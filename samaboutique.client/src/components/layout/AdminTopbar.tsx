@@ -1,9 +1,21 @@
-import { Menu, Bell, Sun, Moon, WifiOff } from "lucide-react";
+import { Menu, Bell, Sun, Moon, WifiOff, Banknote, Trash2 } from "lucide-react";
 import { useUIStore } from "@/stores/ui.store";
 import { useAuthStore } from "@/stores/auth.store";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatPrice } from "@/lib/utils";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+
+// Temps relatif court (il y a 5 min, 2 h, etc.)
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "à l'instant";
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `il y a ${h} h`;
+  const d = Math.floor(h / 24);
+  return `il y a ${d} j`;
+}
 
 // Titre de page selon la route
 const PAGE_TITLES: { match: (p: string) => boolean; title: string }[] = [
@@ -102,27 +114,61 @@ export function AdminTopbar() {
         {showNotifications && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setShowNotifications(false)} />
-            <div className="absolute right-0 top-11 w-72 rounded-2xl z-20 overflow-hidden admin-card"
+            <div className="absolute right-0 top-11 w-80 rounded-2xl z-20 overflow-hidden admin-card"
               style={{ boxShadow: "0 16px 48px rgba(81,49,2,0.18)" }}>
               <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(81,49,2,0.08)" }}>
                 <h4 style={{ fontSize: 14, fontWeight: 700, color: DARK }}>Notifications</h4>
-                {unreadCount > 0 && (
-                  <button onClick={() => useUIStore.getState().markAllRead()}
-                    className="hover:underline" style={{ fontSize: 12, color: GOLD, cursor: "pointer" }}>
-                    Tout lire
-                  </button>
-                )}
+                <div className="flex items-center gap-3">
+                  {unreadCount > 0 && (
+                    <button onClick={() => useUIStore.getState().markAllRead()}
+                      className="hover:underline" style={{ fontSize: 12, color: GOLD, cursor: "pointer" }}>
+                      Tout lire
+                    </button>
+                  )}
+                  {notifications.length > 0 && (
+                    <button onClick={() => useUIStore.getState().clearNotifications()}
+                      className="flex items-center gap-1 hover:opacity-70" style={{ fontSize: 12, color: "rgba(81,49,2,0.45)", cursor: "pointer" }}
+                      title="Tout effacer">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="max-h-64 overflow-y-auto scrollbar-thin">
+              <div className="max-h-80 overflow-y-auto scrollbar-thin">
                 {notifications.length === 0 ? (
-                  <p className="text-center py-8" style={{ fontSize: 13, color: "rgba(81,49,2,0.45)" }}>Aucune notification</p>
+                  <div className="flex flex-col items-center py-10">
+                    <Bell className="w-7 h-7 mb-2" style={{ color: "rgba(81,49,2,0.20)" }} />
+                    <p style={{ fontSize: 13, color: "rgba(81,49,2,0.45)" }}>Aucune notification</p>
+                  </div>
                 ) : (
-                  notifications.slice(0, 10).map((n) => (
-                    <div key={n.id} className="px-4 py-3 last:border-0"
-                      style={{ borderBottom: "1px solid rgba(81,49,2,0.05)", background: !n.read ? "rgba(199,147,45,0.05)" : "transparent" }}>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: DARK }}>{n.message}</p>
-                    </div>
-                  ))
+                  notifications.slice(0, 20).map((n) => {
+                    const isPayment = n.type === "payment";
+                    return (
+                      <div key={n.id} className="px-4 py-3 flex items-start gap-3 last:border-0"
+                        style={{ borderBottom: "1px solid rgba(81,49,2,0.05)", background: !n.read ? "rgba(199,147,45,0.05)" : "transparent" }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                          style={{ background: isPayment ? "rgba(45,122,79,0.12)" : "rgba(199,147,45,0.10)" }}>
+                          {isPayment
+                            ? <Banknote className="w-4 h-4" style={{ color: "#2D7A4F" }} />
+                            : <Bell className="w-4 h-4" style={{ color: GOLD }} />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          {isPayment && n.amount != null ? (
+                            <>
+                              <p style={{ fontSize: 14, fontWeight: 700, color: "#2D7A4F" }}>{formatPrice(n.amount)}</p>
+                              <p style={{ fontSize: 12, color: "rgba(81,49,2,0.55)" }}>
+                                {n.message.replace(/^Paiement reçu — [^·]*/, "Paiement reçu")}
+                              </p>
+                            </>
+                          ) : (
+                            <p style={{ fontSize: 13, fontWeight: 500, color: DARK }}>{n.message}</p>
+                          )}
+                          <p style={{ fontSize: 11, color: "rgba(81,49,2,0.40)", marginTop: 2 }}>{relativeTime(n.createdAt)}</p>
+                        </div>
+                        {!n.read && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: GOLD }} />}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

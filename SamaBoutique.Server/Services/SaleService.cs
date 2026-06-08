@@ -105,9 +105,9 @@ namespace SamaBoutique.Server.Services
             return (await GetByIdAsync(sale.Id), null);
         }
 
-        public async Task<PagedResponse<SaleResponse>> GetAllAsync(int page, int pageSize, DateTime? from, DateTime? to, string? statut)
+        public async Task<PagedResponse<SaleResponse>> GetAllAsync(int page, int pageSize, DateTime? from, DateTime? to, string? statut, string? modePaiement = null, Guid? userId = null)
         {
-            var (items, total) = await _saleRepo.GetPagedAsync(page, pageSize, from, to, statut);
+            var (items, total) = await _saleRepo.GetPagedAsync(page, pageSize, from, to, statut, modePaiement, userId);
             return PagedResponse<SaleResponse>.Ok(items.Select(Map).ToList(), total, page, pageSize);
         }
 
