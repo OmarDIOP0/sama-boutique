@@ -90,6 +90,22 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url))
         }
     },
+    // Pré-bundle TOUTES les dépendances au démarrage pour éviter les re-optimisations
+    // en cours de session (cause des 504 / "Failed to fetch dynamically imported module").
+    // Toute dépendance importée uniquement par une route lazy doit figurer ici.
+    optimizeDeps: {
+        include: [
+            'react', 'react-dom', 'react-router-dom',
+            'recharts',
+            'react-hook-form', '@hookform/resolvers/zod', 'zod',
+            'axios', 'sonner', 'framer-motion', 'lucide-react',
+            '@headlessui/react', '@heroicons/react',
+            '@tanstack/react-query', '@tanstack/react-query-devtools',
+            'embla-carousel-react', 'embla-carousel-autoplay',
+            'zustand', 'date-fns', 'clsx', 'tailwind-merge', 'class-variance-authority',
+            'html2canvas', 'html5-qrcode', 'jspdf', 'qrcode',
+        ],
+    },
     server: {
         proxy: {
             '^/api': {
