@@ -1,12 +1,34 @@
 import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Search, Edit, Trash2, Package } from "lucide-react";
+import { Plus, Edit, Trash2, Package } from "lucide-react";
+import { toast } from "sonner";
 import { useProducts, useDeleteProduct, useCategories } from "@/hooks/useProducts";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { formatPrice, statusColor, cn, debounce } from "@/lib/utils";
+import {
+  AdminPageHeader, AdminSearchInput, AdminConfirmDialog, AdminStatusBadge,
+} from "@/components/admin/ui";
+import { formatPrice, debounce, cn } from "@/lib/utils";
 import type { Product } from "@/types";
+
+const GOLD = "#C7932D";
+const DARK = "#513102";
+
+// Badge stock coloré selon le niveau
+function StockBadge({ total }: { total: number }) {
+  const cfg = total === 0
+    ? { bg: "rgba(239,68,68,0.10)", color: "#DC2626", pulse: true }
+    : total < 5
+      ? { bg: "rgba(199,147,45,0.12)", color: GOLD, pulse: false }
+      : { bg: "rgba(45,122,79,0.10)", color: "#2D7A4F", pulse: false };
+  return (
+    <span
+      className={cn("inline-flex items-center px-2.5 py-1 rounded-lg", cfg.pulse && "animate-pulse")}
+      style={{ background: cfg.bg, color: cfg.color, fontSize: 12, fontWeight: 600 }}
+    >
+      {total} unité{total > 1 ? "s" : ""}
+    </span>
+  );
+}
 
 export default function Products() {
   const navigate = useNavigate();
@@ -14,6 +36,7 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categoryId, setCategoryId] = useState<string | undefined>();
+  const [statut, setStatut] = useState<string>("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data, isLoading } = useProducts({
@@ -21,15 +44,13 @@ export default function Products() {
     pageSize: 15,
     search: debouncedSearch || undefined,
     categoryId,
+    statut: statut || undefined,
   });
   const { data: categories = [] } = useCategories();
   const deleteMutation = useDeleteProduct();
 
   const handleSearch = useCallback(
-    debounce((val: string) => {
-      setDebouncedSearch(val);
-      setPage(1);
-    }, 300),
+    debounce((val: string) => { setDebouncedSearch(val); setPage(1); }, 300),
     []
   );
 
@@ -37,55 +58,41 @@ export default function Products() {
     {
       key: "nom",
       header: "Produit",
-      render: (row) => {
-        const stockTotal = row.variants.reduce((s, v) => s + v.stockActuel, 0);
-        return (
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border border-border/40">
-              {row.photos[0] ? (
-                <img src={row.photos[0]} alt={row.nom} className="w-full h-full object-cover" />
-              ) : (
-                <Package className="w-5 h-5 text-muted-foreground/50" />
-              )}
-            </div>
-            <div>
-              <p className="font-semibold text-foreground text-base leading-tight">{row.nom}</p>
-              {row.categoryNom && (
-                <p className="text-sm text-muted-foreground mt-0.5">{row.categoryNom}</p>
-              )}
-            </div>
+      render: (row) => (
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(199,147,45,0.08)", border: "1px solid rgba(81,49,2,0.08)" }}>
+            {row.photos[0] ? (
+              <img src={row.photos[0]} alt={row.nom} className="w-full h-full object-cover" />
+            ) : (
+              <Package className="w-5 h-5" style={{ color: "rgba(81,49,2,0.25)" }} />
+            )}
           </div>
-        );
-      },
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 600, color: DARK, lineHeight: 1.2 }}>{row.nom}</p>
+            {row.categoryNom && (
+              <p style={{ fontSize: 13, color: "rgba(81,49,2,0.50)", marginTop: 1 }}>{row.categoryNom}</p>
+            )}
+          </div>
+        </div>
+      ),
     },
     {
       key: "prixVente",
       header: "Prix vente",
       render: (row) => (
-        <span className="font-bold text-sm text-foreground">{formatPrice(row.prixVente)}</span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>{formatPrice(row.prixVente)}</span>
       ),
     },
     {
       key: "stockTotal" as keyof Product,
       header: "Stock total",
-      render: (row) => {
-        const stockTotal = row.variants.reduce((s, v) => s + v.stockActuel, 0);
-        const color = stockTotal === 0 ? "text-danger bg-danger/10" : stockTotal < 5 ? "text-warning bg-warning/10" : "text-success bg-success/10";
-        return (
-          <span className={cn("inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold", color)}>
-            {stockTotal} unité{stockTotal > 1 ? "s" : ""}
-          </span>
-        );
-      },
+      render: (row) => <StockBadge total={row.variants.reduce((s, v) => s + v.stockActuel, 0)} />,
     },
     {
       key: "statut",
       header: "Statut",
-      render: (row) => (
-        <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold", statusColor(row.statut))}>
-          {row.statut}
-        </span>
-      ),
+      render: (row) => <AdminStatusBadge statut={row.statut} dot={false} />,
     },
     {
       key: "actions",
@@ -95,15 +102,21 @@ export default function Products() {
         <div className="flex items-center gap-1.5">
           <button
             onClick={(e) => { e.stopPropagation(); navigate(`/admin/products/${row.id}/edit`); }}
-            className="w-8 h-8 rounded-xl hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            title="Modifier"
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+            style={{ color: "rgba(81,49,2,0.55)", cursor: "pointer" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(199,147,45,0.10)"; (e.currentTarget as HTMLElement).style.color = GOLD; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(81,49,2,0.55)"; }}
+            title="Modifier" aria-label="Modifier"
           >
             <Edit className="w-4 h-4" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setDeleteId(row.id); }}
-            className="w-8 h-8 rounded-xl hover:bg-danger/10 flex items-center justify-center text-muted-foreground hover:text-danger transition-colors"
-            title="Supprimer"
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+            style={{ color: "rgba(81,49,2,0.55)", cursor: "pointer" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.10)"; (e.currentTarget as HTMLElement).style.color = "#DC2626"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(81,49,2,0.55)"; }}
+            title="Supprimer" aria-label="Supprimer"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -112,38 +125,40 @@ export default function Products() {
     },
   ];
 
+  const selectStyle = {
+    height: 44, borderRadius: 12, border: "1.5px solid rgba(81,49,2,0.12)",
+    background: "white", fontSize: 14, color: DARK, padding: "0 36px 0 14px",
+    cursor: "pointer", appearance: "none" as const,
+    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23513102' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+    backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center",
+  };
+
   return (
-    <div className="p-6 space-y-5">
-      <PageHeader icon={Package} title="Produits" description="Gérez votre catalogue">
-        <Link
-          to="/admin/products/new"
-          className="btn-terra"
-        >
+    <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
+      <AdminPageHeader icon={Package} title="Produits" subtitle="Gérez votre catalogue">
+        <Link to="/admin/products/new" className="admin-btn-gold">
           <Plus className="w-4 h-4" />
           Nouveau produit
         </Link>
-      </PageHeader>
+      </AdminPageHeader>
 
-      {/* Filters */}
+      {/* Filtres */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-52 max-w-sm">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); handleSearch(e.target.value); }}
-            placeholder="Rechercher un produit…"
-            className="search-input pl-10"
-          />
-        </div>
-        <select
-          value={categoryId ?? ""}
-          onChange={(e) => { setCategoryId(e.target.value || undefined); setPage(1); }}
-          className="input-field max-w-[200px]"
-        >
+        <AdminSearchInput
+          value={search}
+          onChange={(v) => { setSearch(v); handleSearch(v); }}
+          placeholder="Rechercher un produit…"
+          className="flex-1 min-w-52 max-w-sm"
+        />
+        <select value={categoryId ?? ""} onChange={(e) => { setCategoryId(e.target.value || undefined); setPage(1); }} style={selectStyle}>
           <option value="">Toutes les catégories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.nom}</option>
-          ))}
+          {categories.map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
+        </select>
+        <select value={statut} onChange={(e) => { setStatut(e.target.value); setPage(1); }} style={selectStyle}>
+          <option value="">Tous les statuts</option>
+          <option value="Actif">Actif</option>
+          <option value="Inactif">Inactif</option>
+          <option value="Archivé">Archivé</option>
         </select>
       </div>
 
@@ -158,11 +173,15 @@ export default function Products() {
         emptyDescription="Créez votre premier produit pour commencer"
       />
 
-      <ConfirmDialog
+      <AdminConfirmDialog
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={() => {
-          if (deleteId) deleteMutation.mutate(deleteId, { onSettled: () => setDeleteId(null) });
+          if (deleteId) deleteMutation.mutate(deleteId, {
+            onSuccess: () => toast.success("Produit supprimé"),
+            onError: (e) => toast.error((e as Error).message || "Erreur lors de la suppression"),
+            onSettled: () => setDeleteId(null),
+          });
         }}
         title="Supprimer le produit"
         description="Cette action est irréversible. Le produit et ses données associées seront définitivement supprimés."

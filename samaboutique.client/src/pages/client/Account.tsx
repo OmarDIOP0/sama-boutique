@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { LogOut, ArrowRight, Package, ShoppingBag, User, ChevronRight } from "lucide-react";
+import { LogOut, ArrowRight, Package, ShoppingBag, ChevronRight, ChevronLeft } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLogout } from "@/hooks/useAuth";
@@ -31,9 +32,11 @@ function StatusBadge({ statut }: { statut: string }) {
 export default function Account() {
     const { user } = useAuthStore();
     const logoutMutation = useLogout();
-    const { data: ordersData } = useOrders({ pageSize: 10 });
+    const [page, setPage] = useState(1);
+    const { data: ordersData } = useOrders({ page, pageSize: 8 });
 
     const orders = ordersData?.data ?? [];
+    const pagination = ordersData?.pagination;
     const initial = user?.nom?.[0]?.toUpperCase() ?? "?";
 
     return (
@@ -134,12 +137,12 @@ export default function Account() {
                                 Mes commandes
                             </span>
                         </div>
-                        {orders.length > 0 && (
+                        {(pagination?.totalCount ?? orders.length) > 0 && (
                             <span
                                 className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
                                 style={{ background: "rgba(199,147,45,0.08)", color: "rgba(81,49,2,0.65)" }}
                             >
-                                {orders.length}
+                                {pagination?.totalCount ?? orders.length}
                             </span>
                         )}
                     </div>
@@ -212,6 +215,33 @@ export default function Account() {
                                     </div>
                                 </Link>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {pagination && pagination.totalPages > 1 && (
+                        <div className="flex items-center justify-between px-6 py-4" style={{ borderTop: "1px solid rgba(81,49,2,0.06)" }}>
+                            <p style={{ fontSize: 12, color: "rgba(81,49,2,0.50)" }}>
+                                Page <strong style={{ color: "#513102" }}>{pagination.page}</strong> / {pagination.totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    disabled={!pagination.hasPrevious}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30"
+                                    style={{ border: "1.5px solid rgba(81,49,2,0.12)", color: "#513102", cursor: pagination.hasPrevious ? "pointer" : "not-allowed" }}
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setPage((p) => p + 1)}
+                                    disabled={!pagination.hasNext}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30"
+                                    style={{ border: "1.5px solid rgba(81,49,2,0.12)", color: "#513102", cursor: pagination.hasNext ? "pointer" : "not-allowed" }}
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

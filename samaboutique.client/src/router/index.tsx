@@ -35,6 +35,7 @@ const Checkout = lazy(() => import("@/pages/client/Checkout"));
 const OrderConfirm = lazy(() => import("@/pages/client/OrderConfirm"));
 const OrderTracking = lazy(() => import("@/pages/client/OrderTracking"));
 const Account = lazy(() => import("@/pages/client/Account"));
+const Favorites = lazy(() => import("@/pages/client/Favorites"));
 
 function PageSuspense({ children }: { children: React.ReactNode }) {
   return (
@@ -105,6 +106,7 @@ export const router = createBrowserRouter([
           { path: "commande/confirmation", element: <PageSuspense><OrderConfirm /></PageSuspense> },
           { path: "commande/suivi/:id", element: <PageSuspense><OrderTracking /></PageSuspense> },
           { path: "compte", element: <PageSuspense><Account /></PageSuspense> },
+          { path: "favoris", element: <PageSuspense><Favorites /></PageSuspense> },
         ],
       },
     ],

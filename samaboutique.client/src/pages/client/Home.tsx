@@ -115,12 +115,13 @@ const CAT_COLORS = [
 ];
 
 // Hero slide backgrounds
+// Couleurs chaudes en harmonie avec le design Wurus (ivoire/or/brun)
 const HERO_COLORS = [
-    "linear-gradient(135deg, #FFECD2 0%, #FCB69F 100%)",
-    "linear-gradient(135deg, #A8EDEA 0%, #FED6E3 100%)",
-    "linear-gradient(135deg, #D4FC79 0%, #96E6A1 100%)",
-    "linear-gradient(135deg, #FCCB90 0%, #D57EEB 100%)",
-    "linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)",
+    "linear-gradient(135deg, #FFF0DC 0%, #F5D5A0 100%)",  // or doux
+    "linear-gradient(135deg, #FAF0E8 0%, #E8C9A0 100%)",  // crème ambré
+    "linear-gradient(135deg, #F5E6D3 0%, #D4A574 100%)",  // terre caramel
+    "linear-gradient(135deg, #FDF5E6 0%, #E8B87E 100%)",  // sable doré
+    "linear-gradient(135deg, #F7EDE2 0%, #C9956A 100%)",  // terracotta doux
 ];
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
@@ -135,7 +136,7 @@ function ProductSkeleton() {
 }
 
 // ─── Product card (compact) ────────────────────────────────────────────────────
-function ProductCard({ product, index }: { product: Product; index: number }) {
+export function ProductCard({ product, index }: { product: Product; index: number }) {
     const navigate = useNavigate();
     const addItem = useCartStore((s) => s.addItem);
     const { user } = useAuthStore();
@@ -179,7 +180,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
     return (
         <Link to={`/produit/${product.id}`} className="sama-card block group wurus-card hover:-translate-y-1 transition-all duration-300">
-            <div className="relative overflow-hidden" style={{ borderRadius: "16px 16px 0 0", background: "#F5F0EA", aspectRatio: "3/4" }}>
+            <div className="relative overflow-hidden" style={{ borderRadius: "16px 16px 0 0", background: "#F5F0EA", aspectRatio: "1/1" }}>
                 {product.photos[0] ? (
                     <img
                         src={product.photos[0]} alt={product.nom} loading="lazy"
@@ -642,10 +643,10 @@ function FilterSection({ title, children, defaultOpen = true }: {
 }) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className="sama-filter-section pb-3.5 mb-3.5 last:border-0 last:pb-0 last:mb-0">
-            <button onClick={() => setOpen((v) => !v)} className="flex items-center justify-between w-full mb-2.5">
-                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--sama-warm-muted)" }}>{title}</span>
-                {open ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+        <div className="sama-filter-section pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+            <button onClick={() => setOpen((v) => !v)} className="flex items-center justify-between w-full mb-3">
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--sama-warm-muted)" }}>{title}</span>
+                {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
             </button>
             {open && children}
         </div>
@@ -659,7 +660,7 @@ function PriceInput({ value, onChange, placeholder }: { value: number | ""; onCh
         <input type="number" min={0} placeholder={placeholder} value={local}
             onChange={(e) => setLocal(e.target.value)}
             onBlur={(e) => onChange(e.target.value === "" ? "" : Number(e.target.value))}
-            className="w-full h-8 px-2.5 rounded-lg border border-input bg-background text-xs outline-none focus:border-primary transition-colors"
+            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm outline-none focus:border-primary transition-colors"
         />
     );
 }
@@ -754,11 +755,11 @@ export default function Home() {
         <div>
             <div className="pb-3.5 mb-3.5 sama-filter-section">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input value={search}
                         onChange={(e) => { setSearch(e.target.value); handleSearch(e.target.value); setPage(1); }}
                         placeholder="Chercher…"
-                        className="w-full h-8 pl-8 pr-3 rounded-lg border border-input bg-background text-[12px] outline-none focus:border-primary transition-colors"
+                        className="w-full h-10 pl-9 pr-3 rounded-lg border border-input bg-background text-sm outline-none focus:border-primary transition-colors"
                     />
                     {search && (
                         <button onClick={() => { setSearch(""); setDebouncedSearch(""); setPage(1); }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -769,24 +770,24 @@ export default function Home() {
             </div>
 
             <FilterSection title="Catégorie">
-                <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center"
+                <div className="space-y-2.5">
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                        <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
                             style={{ borderColor: !categoryId ? "var(--sama-terra)" : "rgba(0,0,0,0.15)", background: !categoryId ? "var(--sama-terra)" : "transparent" }}>
                             {!categoryId && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
                         <input type="radio" name="cat" checked={!categoryId} onChange={() => handleCategorySelect(undefined)} className="sr-only" />
-                        <span style={{ fontSize: 12.5 }}>Toutes</span>
+                        <span style={{ fontSize: 14, color: "#513102" }}>Toutes</span>
                     </label>
                     {categories.map((cat) => (
-                        <label key={cat.id} className="flex items-center gap-2 cursor-pointer">
-                            <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center"
+                        <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer">
+                            <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
                                 style={{ borderColor: categoryId === cat.id ? "var(--sama-terra)" : "rgba(0,0,0,0.15)", background: categoryId === cat.id ? "var(--sama-terra)" : "transparent" }}>
                                 {categoryId === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
                             <input type="radio" name="cat" checked={categoryId === cat.id} onChange={() => handleCategorySelect(cat.id)} className="sr-only" />
-                            <span className="flex-1" style={{ fontSize: 12.5 }}>{cat.nom}</span>
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: "rgba(0,0,0,0.05)", color: "var(--sama-warm-muted)" }}>{cat.nbProduits}</span>
+                            <span className="flex-1" style={{ fontSize: 14, color: "#513102" }}>{cat.nom}</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(0,0,0,0.05)", color: "var(--sama-warm-muted)" }}>{cat.nbProduits}</span>
                         </label>
                     ))}
                 </div>
@@ -802,10 +803,10 @@ export default function Home() {
 
             {availableSizes.length > 0 && (
                 <FilterSection title="Taille">
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                         {availableSizes.map((s) => (
                             <button key={s} onClick={() => toggleSize(s)}
-                                className="px-2 py-0.5 rounded text-[11px] font-semibold transition-all"
+                                className="px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all"
                                 style={{
                                     border: selectedSizes.includes(s) ? "1.5px solid var(--sama-terra)" : "1.5px solid rgba(0,0,0,0.1)",
                                     background: selectedSizes.includes(s) ? "rgba(184,77,34,0.08)" : "transparent",
@@ -820,11 +821,11 @@ export default function Home() {
 
             <FilterSection title="Disponibilité" defaultOpen={false}>
                 <label className="flex items-center gap-2.5 cursor-pointer">
-                    <div className="w-8 h-[18px] rounded-full relative transition-all" style={{ background: inStockOnly ? "var(--sama-terra)" : "rgba(0,0,0,0.1)" }}
+                    <div className="w-9 h-5 rounded-full relative transition-all flex-shrink-0" style={{ background: inStockOnly ? "var(--sama-terra)" : "rgba(0,0,0,0.1)" }}
                         onClick={() => { setInStockOnly((v) => !v); setPage(1); }}>
-                        <div className="absolute top-[2px] w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all" style={{ left: inStockOnly ? "calc(100% - 16px)" : "2px" }} />
+                        <div className="absolute top-[2px] w-4 h-4 rounded-full bg-white shadow-sm transition-all" style={{ left: inStockOnly ? "calc(100% - 18px)" : "2px" }} />
                     </div>
-                    <span style={{ fontSize: 12.5 }}>En stock</span>
+                    <span style={{ fontSize: 14, color: "#513102" }}>En stock</span>
                 </label>
             </FilterSection>
 
@@ -853,18 +854,18 @@ export default function Home() {
             {/* {showHero && <NewArrivalsRow products={data?.data ?? []} />} */}
 
             <div className="flex min-h-screen wurus-bg">
-                {/* ── Desktop sidebar ── */}
-                <aside className="hidden lg:block w-52 xl:w-56 shrink-0 sticky self-start overflow-y-auto px-4 py-5"
+                {/* ── Desktop sidebar — compact ── */}
+                <aside className="hidden lg:block w-64 xl:w-72 shrink-0 sticky self-start overflow-y-auto px-5 py-6"
                     style={{ top: 70, height: "calc(100vh - 70px)", borderRight: "1px solid rgba(81,49,2,0.07)", background: "rgba(255,255,255,0.80)", backdropFilter: "blur(12px)" }}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Filtres</h2>
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", color: "#513102" }}>Filtres</h2>
                         {hasActiveFilters && <div className="w-2 h-2 rounded-full" style={{ background: "var(--sama-terra)" }} />}
                     </div>
                     <SidebarContent />
                 </aside>
 
-                {/* ── Main content ── */}
-                <div className="flex-1 min-w-0 px-4 sm:px-5 py-5">
+                {/* ── Main content — sans padding excessif ── */}
+                <div className="flex-1 min-w-0 px-3 sm:px-4 py-5">
                     {/* Topbar */}
                     <div className="flex items-center justify-between gap-3 mb-5">
                         <div className="flex items-center gap-2 flex-wrap">

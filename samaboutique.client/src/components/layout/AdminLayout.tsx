@@ -40,7 +40,7 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: "var(--background)" }}>
+    <div className="admin-scope min-h-screen flex">
       <AdminSidebar />
 
       <div
@@ -50,7 +50,7 @@ export function AdminLayout() {
         )}
       >
         <AdminTopbar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto admin-bg">
           <ErrorBoundary>
             <div className="page-enter">
               <Outlet />

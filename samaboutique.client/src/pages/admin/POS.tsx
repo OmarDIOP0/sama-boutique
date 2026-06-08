@@ -332,7 +332,10 @@ export default function POS() {
   const renduMonnaie = cart.montantRecu - cart.total();
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden">
+    <div
+      className="h-[calc(100vh-4rem)] flex overflow-hidden admin-bg"
+      style={{ ["--sama-terra" as any]: "#C7932D", ["--sama-terra-light" as any]: "rgba(199,147,45,0.10)" }}
+    >
 
       {/* ── Left: Product search ───────────────────────────────── */}
       <div className="flex-1 flex flex-col border-r border-border/50 overflow-hidden">

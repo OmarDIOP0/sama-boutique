@@ -1,27 +1,56 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Warehouse, Plus, X, Loader2, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import {
+  Warehouse, Plus, Loader2, TrendingUp, TrendingDown, RefreshCw,
+  AlertTriangle, Package, Boxes,
+} from "lucide-react";
+import { toast } from "sonner";
 import { useStockMovements, useAddStockMovement } from "@/hooks/useStock";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, useStockAlerts } from "@/hooks/useProducts";
 import { stockMovementSchema, type StockMovementFormData } from "@/lib/validators";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { formatDateTime, cn } from "@/lib/utils";
+import { AdminPageHeader, AdminModal } from "@/components/admin/ui";
+import { formatPrice, formatDateTime, cn } from "@/lib/utils";
 import type { StockMovement } from "@/types";
 
+const GOLD = "#C7932D";
+const DARK = "#513102";
+
 const TYPE_CONFIG: Record<string, { color: string; bg: string; Icon: typeof TrendingUp }> = {
-  "Entrée":     { color: "text-success",  bg: "bg-success/10",  Icon: TrendingUp },
-  "Sortie":     { color: "text-danger",   bg: "bg-danger/10",   Icon: TrendingDown },
-  "Ajustement": { color: "text-warning",  bg: "bg-warning/10",  Icon: RefreshCw },
+  "Entrée": { color: "#2D7A4F", bg: "rgba(45,122,79,0.10)", Icon: TrendingUp },
+  "Sortie": { color: "#DC2626", bg: "rgba(239,68,68,0.10)", Icon: TrendingDown },
+  "Vente": { color: "#DC2626", bg: "rgba(239,68,68,0.10)", Icon: TrendingDown },
+  "Retour": { color: "#2D7A4F", bg: "rgba(45,122,79,0.10)", Icon: TrendingUp },
+  "Ajustement": { color: GOLD, bg: "rgba(199,147,45,0.12)", Icon: RefreshCw },
 };
 
-// Reusable modal field label
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2.5">
+    <label className="block mb-2" style={{ fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(81,49,2,0.55)" }}>
       {children}
     </label>
+  );
+}
+
+const inputStyle = (err?: boolean): React.CSSProperties => ({
+  width: "100%", height: 46, borderRadius: 12, padding: "0 14px",
+  border: `1.5px solid ${err ? "#EF4444" : "rgba(81,49,2,0.14)"}`,
+  background: "white", fontSize: 15, color: DARK, outline: "none",
+});
+
+// Mini KPI card inline
+function StatCard({ icon: Icon, label, value, accent }: { icon: React.ElementType; label: string; value: string; accent: string }) {
+  return (
+    <div className="admin-card p-4 flex items-center gap-3">
+      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${accent}1A` }}>
+        <Icon className="w-5 h-5" style={{ color: accent }} />
+      </div>
+      <div>
+        <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(81,49,2,0.50)" }}>{label}</p>
+        <p style={{ fontSize: 20, fontWeight: 800, color: DARK, fontFamily: "'Playfair Display', Georgia, serif" }}>{value}</p>
+      </div>
+    </div>
   );
 }
 
@@ -31,26 +60,30 @@ export default function Stock() {
 
   const { data, isLoading } = useStockMovements({ page, pageSize: 15 });
   const { data: productsData } = useProducts({ statut: "Actif", pageSize: 100 });
+  const { data: alerts = [] } = useStockAlerts();
   const addMovementMutation = useAddStockMovement();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<StockMovementFormData>({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<StockMovementFormData>({
     resolver: zodResolver(stockMovementSchema),
     defaultValues: { type: "Entrée", quantite: 1 },
   });
+  const selectedType = watch("type");
 
-  const onSubmit = (data: StockMovementFormData) => {
-    addMovementMutation.mutate(data, {
-      onSuccess: () => { reset(); setShowModal(false); },
+  const onSubmit = (formData: StockMovementFormData) => {
+    addMovementMutation.mutate(formData, {
+      onSuccess: () => { reset(); setShowModal(false); toast.success("Mouvement de stock enregistré"); },
+      onError: (e) => toast.error((e as Error).message || "Erreur lors de l'enregistrement"),
     });
   };
 
+  // Stats
+  const products = productsData?.data ?? [];
+  const totalStock = products.reduce((s, p) => s + p.variants.reduce((vs, v) => vs + v.stockActuel, 0), 0);
+  const valeurStock = products.reduce((s, p) => s + p.variants.reduce((vs, v) => vs + v.stockActuel * p.prixVente, 0), 0);
+  const ruptures = alerts.filter((a) => a.stockActuel === 0).length;
+
   const variantOptions: { id: string; label: string }[] = [];
-  productsData?.data?.forEach((p) => {
+  products.forEach((p) => {
     p.variants.forEach((v) => {
       const info = [v.taille, v.couleur].filter(Boolean).join("/") || "Standard";
       variantOptions.push({ id: v.id, label: `${p.nom} — ${info} (stock: ${v.stockActuel})` });
@@ -59,22 +92,20 @@ export default function Stock() {
 
   const columns: Column<StockMovement>[] = [
     {
-      key: "productNom",
-      header: "Produit / Variante",
+      key: "productNom", header: "Produit / Variante",
       render: (row) => (
         <div>
-          <p className="text-sm font-semibold text-foreground">{row.productNom}</p>
-          {row.variante && <p className="text-xs text-muted-foreground mt-0.5">{row.variante}</p>}
+          <p style={{ fontSize: 14.5, fontWeight: 600, color: DARK }}>{row.productNom}</p>
+          {row.variante && <p style={{ fontSize: 12.5, color: "rgba(81,49,2,0.50)", marginTop: 1 }}>{row.variante}</p>}
         </div>
       ),
     },
     {
-      key: "type",
-      header: "Type",
+      key: "type", header: "Type",
       render: (row) => {
-        const cfg = TYPE_CONFIG[row.type] ?? { color: "text-muted-foreground", bg: "bg-muted", Icon: RefreshCw };
+        const cfg = TYPE_CONFIG[row.type] ?? { color: "rgba(81,49,2,0.55)", bg: "rgba(81,49,2,0.06)", Icon: RefreshCw };
         return (
-          <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold", cfg.color, cfg.bg)}>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: cfg.bg, color: cfg.color, fontSize: 12, fontWeight: 600 }}>
             <cfg.Icon className="w-3 h-3" />
             {row.type}
           </span>
@@ -82,45 +113,57 @@ export default function Stock() {
       },
     },
     {
-      key: "quantite",
-      header: "Quantité",
-      render: (row) => (
-        <span className={cn("font-bold text-base", row.type === "Entrée" ? "text-success" : "text-danger")}>
-          {row.type === "Entrée" ? "+" : "−"}{row.quantite}
-        </span>
-      ),
+      key: "quantite", header: "Quantité",
+      render: (row) => {
+        const isEntry = row.type === "Entrée" || row.type === "Retour";
+        return <span style={{ fontSize: 15, fontWeight: 700, color: isEntry ? "#2D7A4F" : "#DC2626" }}>{isEntry ? "+" : "−"}{row.quantite}</span>;
+      },
     },
     {
-      key: "stockApres",
-      header: "Stock après",
-      render: (row) => (
-        <span className="text-sm font-semibold text-foreground">{row.stockApres}</span>
-      ),
+      key: "stockApres", header: "Stock après",
+      render: (row) => <span style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{row.stockApres}</span>,
     },
     {
-      key: "motif",
-      header: "Motif",
-      render: (row) => (
-        <span className="text-xs text-muted-foreground">{row.motif ?? <span className="italic">—</span>}</span>
-      ),
+      key: "motif", header: "Motif",
+      render: (row) => <span style={{ fontSize: 13, color: "rgba(81,49,2,0.55)", fontStyle: row.motif ? "normal" : "italic" }}>{row.motif ?? "—"}</span>,
     },
     {
-      key: "date",
-      header: "Date",
-      render: (row) => (
-        <span className="text-xs text-muted-foreground tabular-nums">{formatDateTime(row.date)}</span>
-      ),
+      key: "date", header: "Date",
+      render: (row) => <span className="tabular-nums" style={{ fontSize: 13, color: "rgba(81,49,2,0.50)" }}>{formatDateTime(row.date)}</span>,
     },
   ];
 
   return (
-    <div className="p-6 space-y-5">
-      <PageHeader icon={Warehouse} title="Stock" description="Gérez les mouvements de stock">
-        <button onClick={() => setShowModal(true)} className="btn-terra">
+    <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
+      <AdminPageHeader icon={Warehouse} title="Stock" subtitle="Mouvements et niveaux de stock">
+        <button onClick={() => setShowModal(true)} className="admin-btn-gold">
           <Plus className="w-4 h-4" />
           Nouveau mouvement
         </button>
-      </PageHeader>
+      </AdminPageHeader>
+
+      {/* KPI inline */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard icon={Boxes} label="Total en stock" value={`${totalStock} u.`} accent="#2D7A4F" />
+        <StatCard icon={Package} label="Valeur du stock" value={formatPrice(valeurStock)} accent={GOLD} />
+        <StatCard icon={AlertTriangle} label="Produits en alerte" value={`${alerts.length}`} accent="#DC2626" />
+      </div>
+
+      {/* Bannière rupture */}
+      {ruptures > 0 && (
+        <div className="flex items-center justify-between gap-3 p-4 rounded-2xl" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.20)" }}>
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" style={{ color: "#DC2626" }} />
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#DC2626" }}>
+              {ruptures} produit{ruptures > 1 ? "s" : ""} en rupture de stock
+            </p>
+          </div>
+          <button onClick={() => setShowModal(true)} className="px-4 h-9 rounded-full flex items-center gap-1.5"
+            style={{ background: "#DC2626", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            <Plus className="w-3.5 h-3.5" /> Réapprovisionner
+          </button>
+        </div>
+      )}
 
       <DataTable
         columns={columns}
@@ -132,106 +175,74 @@ export default function Stock() {
         emptyDescription="Les mouvements apparaîtront ici"
       />
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-card w-full max-w-lg rounded-2xl shadow-2xl border border-border/50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <div className="w-1 h-6 rounded-full" style={{ background: "var(--sama-terra)" }} />
-                <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                  Nouveau mouvement de stock
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowModal(false)}
-                className="w-8 h-8 rounded-xl hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="p-6 space-y-5">
-                <div>
-                  <FieldLabel>Variante du produit *</FieldLabel>
-                  <select
-                    {...register("variantId")}
-                    className={cn("input-field", errors.variantId && "border-danger/60")}
-                  >
-                    <option value="">Sélectionner une variante…</option>
-                    {variantOptions.map((v) => (
-                      <option key={v.id} value={v.id}>{v.label}</option>
-                    ))}
-                  </select>
-                  {errors.variantId && <p className="mt-1.5 text-xs text-danger">{errors.variantId.message}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <FieldLabel>Type de mouvement *</FieldLabel>
-                    <select {...register("type")} className="input-field">
-                      <option value="Entrée">📥 Entrée</option>
-                      <option value="Sortie">📤 Sortie</option>
-                      <option value="Ajustement">🔄 Ajustement</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <FieldLabel>Quantité *</FieldLabel>
-                    <input
-                      {...register("quantite")}
-                      type="number"
-                      min={1}
-                      className={cn("input-field", errors.quantite && "border-danger/60")}
-                      placeholder="1"
-                    />
-                    {errors.quantite && <p className="mt-1.5 text-xs text-danger">{errors.quantite.message}</p>}
-                  </div>
-                </div>
-
-                <div>
-                  <FieldLabel>Motif (optionnel)</FieldLabel>
-                  <input
-                    {...register("motif")}
-                    className="input-field"
-                    placeholder="Ex : Réapprovisionnement fournisseur, correction inventaire…"
-                  />
-                </div>
-
-                {addMovementMutation.error && (
-                  <div className="p-3 rounded-xl bg-danger/8 border border-danger/20 text-sm text-danger">
-                    {(addMovementMutation.error as Error).message}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center gap-3 justify-end px-6 py-4 border-t border-border/50 bg-muted/20">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="btn-outline"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={addMovementMutation.isPending}
-                  className="btn-terra"
-                >
-                  {addMovementMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Enregistrer
-                </button>
-              </div>
-            </form>
+      {/* Modal nouveau mouvement */}
+      <AdminModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        icon={Warehouse}
+        title="Nouveau mouvement de stock"
+        persistent={addMovementMutation.isPending}
+        footer={
+          <>
+            <button type="button" onClick={() => setShowModal(false)} className="admin-btn-outline">Annuler</button>
+            <button type="submit" form="stock-form" disabled={addMovementMutation.isPending} className="admin-btn-gold">
+              {addMovementMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Enregistrer
+            </button>
+          </>
+        }
+      >
+        <form id="stock-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <FieldLabel>Variante du produit *</FieldLabel>
+            <select {...register("variantId")} style={{ ...inputStyle(!!errors.variantId), cursor: "pointer" }}>
+              <option value="">Sélectionner une variante…</option>
+              {variantOptions.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+            </select>
+            {errors.variantId && <p className="mt-1.5" style={{ fontSize: 12, color: "#DC2626" }}>{errors.variantId.message}</p>}
           </div>
-        </div>
-      )}
+
+          {/* Type — radio pills */}
+          <div>
+            <FieldLabel>Type de mouvement *</FieldLabel>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: "Entrée", label: "Entrée", icon: TrendingUp, color: "#2D7A4F" },
+                { value: "Sortie", label: "Sortie", icon: TrendingDown, color: "#DC2626" },
+                { value: "Ajustement", label: "Correction", icon: RefreshCw, color: GOLD },
+              ].map((t) => (
+                <label key={t.value} className="flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all"
+                  style={{
+                    border: selectedType === t.value ? `2px solid ${t.color}` : "1.5px solid rgba(81,49,2,0.12)",
+                    background: selectedType === t.value ? `${t.color}0D` : "white",
+                    cursor: "pointer",
+                  }}>
+                  <input type="radio" value={t.value} {...register("type")} className="sr-only" />
+                  <t.icon className="w-4 h-4" style={{ color: selectedType === t.value ? t.color : "rgba(81,49,2,0.40)" }} />
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: selectedType === t.value ? t.color : "rgba(81,49,2,0.55)" }}>{t.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <FieldLabel>Quantité *</FieldLabel>
+            <input {...register("quantite")} type="number" min={1} style={inputStyle(!!errors.quantite)} placeholder="1" />
+            {errors.quantite && <p className="mt-1.5" style={{ fontSize: 12, color: "#DC2626" }}>{errors.quantite.message}</p>}
+          </div>
+
+          <div>
+            <FieldLabel>Motif (optionnel)</FieldLabel>
+            <input {...register("motif")} style={inputStyle()} placeholder="Ex : Réapprovisionnement fournisseur…" />
+          </div>
+
+          {addMovementMutation.error && (
+            <div className="p-3 rounded-xl" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
+              <p style={{ fontSize: 13, color: "#DC2626" }}>{(addMovementMutation.error as Error).message}</p>
+            </div>
+          )}
+        </form>
+      </AdminModal>
     </div>
   );
 }

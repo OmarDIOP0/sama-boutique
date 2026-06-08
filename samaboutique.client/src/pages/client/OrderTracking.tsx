@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Check, Clock, Package, Truck, MapPin, ShoppingBag, ChevronRight } from "lucide-react";
+import { ArrowLeft, Check, Clock, Package, Truck, MapPin, ShoppingBag, Download } from "lucide-react";
 import { useOrder } from "@/hooks/useOrders";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
-import { formatPrice, formatDateTime } from "@/lib/utils";
+import { OrderReceipt } from "@/components/shared/OrderReceipt";
+import { formatPrice } from "@/lib/utils";
 import type { OrderStatus } from "@/types";
 
 const STEPS: { status: OrderStatus; label: string; icon: React.ElementType }[] = [
@@ -18,6 +20,7 @@ const STATUS_ORDER: OrderStatus[] = ["EnAttente", "Confirmee", "EnPreparation", 
 export default function OrderTracking() {
     const { id } = useParams<{ id: string }>();
     const { data: order, isLoading } = useOrder(id);
+    const [showReceipt, setShowReceipt] = useState(false);
 
     if (isLoading) return <LoadingSkeleton variant="page" />;
     if (!order)
@@ -49,15 +52,25 @@ export default function OrderTracking() {
         <div className="min-h-screen wurus-bg">
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-5">
 
-                {/* ── Back link ────────────────────────────────────────────────────── */}
-                <Link
-                    to="/compte"
-                    className="inline-flex items-center gap-1.5 text-[12.5px] font-medium hover:opacity-75 transition-opacity"
-                    style={{ color: "rgba(81,49,2,0.55)" }}
-                >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Mes commandes
-                </Link>
+                {/* ── Back link + Reçu ─────────────────────────────────────────────── */}
+                <div className="flex items-center justify-between">
+                    <Link
+                        to="/compte"
+                        className="inline-flex items-center gap-1.5 text-[12.5px] font-medium hover:opacity-75 transition-opacity"
+                        style={{ color: "rgba(81,49,2,0.55)" }}
+                    >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        Mes commandes
+                    </Link>
+                    <button
+                        onClick={() => setShowReceipt(true)}
+                        className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-full font-semibold transition-all hover:opacity-80"
+                        style={{ fontSize: 12, background: "rgba(199,147,45,0.10)", border: "1.5px solid rgba(199,147,45,0.30)", color: "#C7932D", cursor: "pointer" }}
+                    >
+                        <Download className="w-3.5 h-3.5" />
+                        Reçu PDF
+                    </button>
+                </div>
 
                 {/* ── Header card ──────────────────────────────────────────────────── */}
                 <div className="wurus-card overflow-hidden">
@@ -256,6 +269,11 @@ export default function OrderTracking() {
                     )}
                 </div>
             </div>
+
+            {/* Reçu modal */}
+            {showReceipt && order && (
+                <OrderReceipt order={order} onClose={() => setShowReceipt(false)} modal={true} />
+            )}
         </div>
     );
 }

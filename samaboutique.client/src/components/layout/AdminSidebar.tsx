@@ -1,19 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Package,
-  Tag,
-  Warehouse,
-  ShoppingCart,
-  Receipt,
-  Users,
-  ShoppingBag,
-  BarChart3,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  AlertTriangle,
-  Store,
+  LayoutDashboard, Package, Tag, Warehouse, ShoppingCart, Receipt,
+  Users, ShoppingBag, BarChart3, Settings, LogOut, ChevronLeft,
+  AlertTriangle, ExternalLink,
 } from "lucide-react";
 import { cn, getInitials, roleLabel } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth.store";
@@ -34,6 +23,10 @@ const navItems = [
   { to: "/admin/settings", icon: Settings, label: "Paramètres" },
 ];
 
+const DARK = "#513102";
+const GOLD = "#C7932D";
+const CREAM = "#FFF8EE";
+
 export function AdminSidebar() {
   const { user } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUIStore();
@@ -45,59 +38,47 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-20 lg:hidden"
-          onClick={toggleSidebar}
-        />
+        <div className="fixed inset-0 z-20 lg:hidden" style={{ background: "rgba(26,16,8,0.45)" }} onClick={toggleSidebar} />
       )}
 
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full z-30 flex flex-col sidebar-gradient transition-all duration-300 ease-in-out",
+          "fixed top-0 left-0 h-full z-30 flex flex-col transition-all duration-300 ease-in-out",
           sidebarOpen ? "w-64" : "w-16",
           "lg:translate-x-0",
           !sidebarOpen && "-translate-x-full lg:translate-x-0"
         )}
+        style={{ background: DARK }}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between px-4 py-5 border-b border-[--sidebar-border]">
+        <div className="flex items-center justify-between px-4 py-5" style={{ borderBottom: "1px solid rgba(255,248,238,0.10)" }}>
           <button
-            onClick={() => navigate("/")}
-            className={cn(
-              "flex items-center gap-3 overflow-hidden transition-all",
-              !sidebarOpen && "lg:justify-center"
-            )}
+            onClick={() => navigate("/admin")}
+            className={cn("flex items-center gap-3 overflow-hidden", !sidebarOpen && "lg:justify-center")}
           >
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "var(--sama-terra)" }}>
-              <Store className="w-5 h-5 text-white" />
+              style={{ background: GOLD, boxShadow: "0 2px 10px rgba(199,147,45,0.40)" }}>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700, fontSize: 18, color: CREAM }}>S</span>
             </div>
             {sidebarOpen && (
-              <span className="font-bold text-[--sidebar-foreground] text-base whitespace-nowrap"
-                style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "0.01em" }}>
-                SamaBoutique
+              <span className="whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, color: CREAM }}>
+                Sama<span style={{ fontStyle: "italic", color: GOLD }}>Boutique</span>
               </span>
             )}
           </button>
           <button
             onClick={toggleSidebar}
             className="hidden lg:flex w-6 h-6 rounded-lg items-center justify-center transition-colors"
-            style={{ color: "var(--sidebar-muted)" }}
+            style={{ color: "rgba(255,248,238,0.50)" }}
           >
-            <ChevronLeft
-              className={cn(
-                "w-3.5 h-3.5 transition-transform duration-300",
-                !sidebarOpen && "rotate-180"
-              )}
-            />
+            <ChevronLeft className={cn("w-3.5 h-3.5 transition-transform duration-300", !sidebarOpen && "rotate-180")} />
           </button>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-3 px-2">
-          <ul className="space-y-0.5">
+          <ul className="space-y-1">
             {navItems.map(({ to, icon: Icon, label, end }) => (
               <li key={to}>
                 <NavLink
@@ -105,50 +86,38 @@ export function AdminSidebar() {
                   end={end}
                   className={({ isActive }) =>
                     cn(
-                      "group relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-150",
-                      isActive
-                        ? "text-[--sidebar-primary]"
-                        : "text-[--sidebar-foreground]/60 hover:text-[--sidebar-foreground] hover:bg-[--sidebar-border]",
+                      "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150",
                       !sidebarOpen && "lg:justify-center"
                     )
                   }
                   style={({ isActive }) =>
                     isActive
-                      ? {
-                          background: "var(--sidebar-accent)",
-                          borderLeft: "3px solid var(--sama-terra)",
-                          paddingLeft: sidebarOpen ? "calc(0.75rem - 3px)" : "calc(0.75rem - 3px)",
-                        }
-                      : {}
+                      ? { background: "rgba(199,147,45,0.20)", borderLeft: `3px solid ${GOLD}`, paddingLeft: "calc(0.75rem - 3px)" }
+                      : { borderLeft: "3px solid transparent" }
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon
-                        className={cn(
-                          "w-5 h-5 flex-shrink-0 transition-colors",
-                          isActive
-                            ? "text-[--sidebar-primary]"
-                            : "text-[--sidebar-muted] group-hover:text-[--sidebar-foreground]"
-                        )}
-                      />
+                      <Icon className="w-5 h-5 flex-shrink-0 transition-colors"
+                        style={{ color: isActive ? GOLD : "rgba(255,248,238,0.55)" }} />
                       {sidebarOpen && (
-                        <span className="truncate">{label}</span>
+                        <span className="truncate" style={{ fontSize: 14, fontWeight: isActive ? 600 : 500, color: isActive ? GOLD : "rgba(255,248,238,0.75)" }}>
+                          {label}
+                        </span>
                       )}
-                      {/* Stock alert badge */}
+                      {/* Badge alerte stock sur Produits */}
                       {label === "Produits" && stockAlertCount > 0 && (
                         <span className={cn(
-                          "flex-shrink-0 bg-danger text-white text-xs rounded-full font-bold",
-                          sidebarOpen
-                            ? "ml-auto px-1.5 min-w-[18px] h-[18px] flex items-center justify-center"
-                            : "absolute top-1 right-1 w-4 h-4 flex items-center justify-center text-[10px]"
-                        )}>
+                          "flex-shrink-0 text-white rounded-full font-bold flex items-center justify-center",
+                          sidebarOpen ? "ml-auto px-1.5 min-w-[18px] h-[18px] text-[11px]" : "absolute top-1 right-1 w-4 h-4 text-[9px]"
+                        )} style={{ background: GOLD }} title={`${stockAlertCount} produit(s) en stock bas`}>
                           {stockAlertCount}
                         </span>
                       )}
-                      {/* Tooltip for collapsed */}
+                      {/* Tooltip collapsed */}
                       {!sidebarOpen && (
-                        <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
+                        <div className="absolute left-full ml-2 px-2 py-1 text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50"
+                          style={{ background: DARK, color: CREAM, border: `1px solid ${GOLD}` }}>
                           {label}
                         </div>
                       )}
@@ -158,50 +127,63 @@ export function AdminSidebar() {
               </li>
             ))}
           </ul>
+
+          {/* Boutique en ligne */}
+          {sidebarOpen && (
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
+              style={{ borderLeft: "3px solid transparent" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,248,238,0.06)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+            >
+              <ExternalLink className="w-5 h-5 flex-shrink-0" style={{ color: "rgba(255,248,238,0.55)" }} />
+              <span className="truncate" style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,248,238,0.75)" }}>
+                Boutique en ligne
+              </span>
+            </a>
+          )}
         </nav>
 
-        {/* Stock alert strip */}
+        {/* Alerte stock */}
         {sidebarOpen && stockAlertCount > 0 && (
-          <div className="mx-3 mb-3 p-3 rounded-xl"
-            style={{ background: "rgba(196,98,45,0.08)", border: "1px solid rgba(196,98,45,0.2)" }}>
+          <button
+            onClick={() => navigate("/admin/stock")}
+            className="mx-3 mb-3 p-3 rounded-xl text-left transition-all hover:brightness-105"
+            style={{ background: "rgba(199,147,45,0.14)", border: "1px solid rgba(199,147,45,0.30)" }}
+          >
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--sama-terra)" }} />
-              <p className="text-xs font-medium" style={{ color: "var(--sama-terra)" }}>
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" style={{ color: GOLD }} />
+              <p style={{ fontSize: 12, fontWeight: 600, color: GOLD }}>
                 {stockAlertCount} alerte{stockAlertCount > 1 ? "s" : ""} stock
               </p>
             </div>
-          </div>
+          </button>
         )}
 
-        {/* Divider */}
-        <div className="border-t border-[--sidebar-border]" />
-
-        {/* User profile */}
-        <div className="p-3">
-          <div className={cn(
-            "flex items-center gap-3",
-            !sidebarOpen && "lg:justify-center"
-          )}>
+        {/* Profil utilisateur */}
+        <div className="p-3" style={{ borderTop: "1px solid rgba(255,248,238,0.10)" }}>
+          <div className={cn("flex items-center gap-3", !sidebarOpen && "lg:justify-center")}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "var(--sama-terra-light)", border: "1.5px solid var(--sama-terra)" }}>
-              <span className="text-sm font-bold" style={{ color: "var(--sama-terra)" }}>
+              style={{ background: "rgba(199,147,45,0.18)", border: `1.5px solid ${GOLD}` }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
                 {user ? getInitials(user.nom) : "?"}
               </span>
             </div>
             {sidebarOpen && (
               <>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: "var(--sidebar-foreground)" }}>
-                    {user?.nom}
-                  </p>
-                  <p className="text-xs truncate" style={{ color: "var(--sidebar-muted)" }}>
-                    {user ? roleLabel(user.role) : ""}
-                  </p>
+                  <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: CREAM }}>{user?.nom}</p>
+                  <p className="truncate" style={{ fontSize: 12, color: "rgba(255,248,238,0.50)" }}>{user ? roleLabel(user.role) : ""}</p>
                 </div>
                 <button
                   onClick={() => logoutMutation.mutate()}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-danger/10 hover:text-danger"
-                  style={{ color: "var(--sidebar-muted)" }}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                  style={{ color: "rgba(255,248,238,0.55)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.20)"; (e.currentTarget as HTMLElement).style.color = "#fca5a5"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,248,238,0.55)"; }}
                   title="Déconnexion"
                 >
                   <LogOut className="w-3.5 h-3.5" />

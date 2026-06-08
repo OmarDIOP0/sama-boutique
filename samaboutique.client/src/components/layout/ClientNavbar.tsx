@@ -3,11 +3,15 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, ShoppingCart, User, Menu, X, Heart } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { useWishlistStore } from "@/stores/wishlist.store";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-    { to: "/", label: "Accueil" },
-    //{ to: "/catalogue", label: "Catalogue" },
+const NAV_LINKS_BASE = [
+    { to: "/", label: "Accueil", exact: true },
+];
+const NAV_LINKS_AUTH = [
+    { to: "/favoris", label: "Favoris", exact: false },
+    { to: "/compte", label: "Mes commandes", exact: false },
 ];
 
 // WhatsApp SVG icon
@@ -28,6 +32,7 @@ export function ClientNavbar() {
     const lastScrollY = useRef(0);
 
     const cartCount = useCartStore((s) => s.totalItems());
+    const favCount = useWishlistStore((s) => s.productIds.length);
     const { user } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
@@ -301,11 +306,14 @@ export function ClientNavbar() {
                         {/* Desktop nav */}
                         <div className="nb-divider hidden lg:block mx-1" />
                         <nav className="hidden lg:flex items-center gap-8">
-                            {NAV_LINKS.map(({ to, label }) => (
+                            {[
+                                ...NAV_LINKS_BASE,
+                                ...(user ? NAV_LINKS_AUTH : []),
+                            ].map(({ to, label, exact }) => (
                                 <Link
                                     key={to}
                                     to={to}
-                                    className={cn("nb-link", location.pathname === to && "active")}
+                                    className={cn("nb-link", (exact ? location.pathname === to : location.pathname.startsWith(to)) && "active")}
                                 >
                                     {label}
                                 </Link>
@@ -350,9 +358,12 @@ export function ClientNavbar() {
                             </button>
 
                             {/* Wishlist */}
-                            <button className="nb-icon">
+                            <Link to={user ? "/favoris" : "/login"} className="nb-icon" title="Mes favoris">
                                 <Heart style={{ width: 18, height: 18 }} />
-                            </button>
+                                {favCount > 0 && (
+                                    <span className="nb-badge">{favCount > 9 ? "9+" : favCount}</span>
+                                )}
+                            </Link>
 
                             {/* WhatsApp — juste à côté des favoris */}
                             <a
@@ -431,9 +442,13 @@ export function ClientNavbar() {
                             {/* Mobile links */}
                             <nav className="space-y-1">
                                 {[
-                                    ...NAV_LINKS,
-                                    { to: "/panier", label: `Panier${cartCount > 0 ? ` (${cartCount})` : ""}` },
-                                    { to: user ? "/compte" : "/login", label: user ? `Mon compte` : "Connexion" },
+                                    ...NAV_LINKS_BASE,
+                                    { to: "/panier", label: `Panier${cartCount > 0 ? ` (${cartCount})` : ""}`, exact: false },
+                                    ...(user ? [
+                                        { to: "/favoris", label: `Favoris${favCount > 0 ? ` (${favCount})` : ""}`, exact: false },
+                                        { to: "/compte", label: "Mes commandes", exact: false },
+                                    ] : []),
+                                    { to: user ? "/compte" : "/login", label: user ? `Mon compte (${user.nom?.split(" ")[0]})` : "Connexion", exact: false },
                                 ].map(({ to, label }) => (
                                     <Link
                                         key={to}

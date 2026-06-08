@@ -86,6 +86,7 @@ interface DrawerProps {
     deliveryFee: number;
     userPhone: string;
     orderRef?: string;
+    createdOrder?: any;
     isLoading: boolean;
     error?: string;
     onPay: () => Promise<void>;
@@ -93,7 +94,7 @@ interface DrawerProps {
 
 const STEP_LABELS = ["Méthode", "Numéro", "Confirmation", "Terminé"];
 
-function PaymentDrawer({ open, onClose, total, deliveryFee, userPhone, orderRef, isLoading, error, onPay }: DrawerProps) {
+function PaymentDrawer({ open, onClose, total, deliveryFee, userPhone, orderRef, createdOrder, isLoading, error, onPay }: DrawerProps) {
     const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
     const [wavePhone, setWavePhone] = useState("");
     const [phoneError, setPhoneError] = useState("");
@@ -418,7 +419,9 @@ function PaymentDrawer({ open, onClose, total, deliveryFee, userPhone, orderRef,
                                         </button>
                                     )}
                                     {step === 4 && (
-                                        <Link to={`/commande/confirmation?ref=${orderRef ?? ""}`}
+                                        <Link
+                                            to={`/commande/confirmation?ref=${orderRef ?? ""}`}
+                                            state={{ order: createdOrder }}
                                             className="w-full flex items-center justify-center gap-2 font-bold rounded-full no-underline"
                                             style={{ height: 50, background: "#513102", color: "#FFF8EE", fontSize: 14 }}>
                                             Voir ma commande <ChevronRight className="w-4 h-4" />
@@ -451,6 +454,7 @@ export default function Checkout() {
     const [deliveryMode, setDeliveryMode] = useState<"livraison" | "relais">("livraison");
     const [selectedRelay, setSelectedRelay] = useState(RELAY_POINTS[0].id);
     const [orderRef, setOrderRef] = useState<string | undefined>();
+    const [createdOrder, setCreatedOrder] = useState<any | undefined>();
 
     const clientId = (user as any)?.clientId ?? user?.id ?? "";
     const userPhone = (user as any)?.telephone ?? "";
@@ -490,9 +494,10 @@ export default function Checkout() {
                 { clientId, adresseLivraison: adresse, modePaiement: "MobileMoney", items: cart.items.map(i => ({ variantId: i.variantId, quantite: i.quantite, prixUnitaire: i.prixUnitaire })) },
                 {
                     onSuccess: (order) => {
-                        setOrderCreated(true); // empêche la redirection vers /panier
+                        setOrderCreated(true);
                         setOrderRef(order?.numeroFacture ?? order?.id ?? "CMD");
-                        cart.clearCart(); // vidé APRÈS avoir bloqué la redirection
+                        setCreatedOrder(order); // stocker l'objet complet pour la page confirmation
+                        cart.clearCart();
                         resolve();
                     },
                     onError: reject,
@@ -703,6 +708,7 @@ export default function Checkout() {
                 deliveryFee={deliveryFee}
                 userPhone={userPhone}
                 orderRef={orderRef}
+                createdOrder={createdOrder}
                 isLoading={createOrderMutation.isPending}
                 error={createOrderMutation.error ? (createOrderMutation.error as Error).message : undefined}
                 onPay={handlePay}

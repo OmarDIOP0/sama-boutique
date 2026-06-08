@@ -481,3 +481,126 @@ h1, h2, h3, .display, .font-display {
 .scan-line-anim {
     animation: scan-line 2s linear infinite;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ADMIN — Design system Wurus (crème ivoire / brun chocolat / or ambré)
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+    --admin-bg:      #FFF8EE;
+    --admin-surface: #FFFFFF;
+    --admin-dark:    #513102;
+    --admin-gold:    #C7932D;
+    --admin-gold-h:  #b08024;
+    --admin-muted:   rgba(81,49,2,0.55);
+    --admin-border:  rgba(81,49,2,0.08);
+    --admin-hover:   rgba(199,147,45,0.06);
+}
+
+/* Fond crème + grille subtile */
+.admin-bg {
+    background-color: #FFF8EE;
+    background-image:
+        linear-gradient(#51310208 1px, transparent 1px),
+        linear-gradient(90deg, #51310208 1px, transparent 1px);
+    background-size: 4rem 4rem;
+}
+
+/* Cursor pointer sur tous les interactifs de l'admin */
+.admin-scope a,
+.admin-scope button,
+.admin-scope [role="button"],
+.admin-scope select,
+.admin-scope label[for],
+.admin-scope [data-clickable],
+.admin-scope .cursor-pointer {
+    cursor: pointer;
+}
+
+/* ── Cards admin ── */
+.admin-card {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: 20px;
+    box-shadow: 0 1px 2px rgba(81,49,2,0.04);
+}
+
+/* ── Boutons admin ── */
+.admin-btn-gold {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    height: 44px; padding: 0 1.25rem;
+    border-radius: 9999px;
+    background: var(--admin-gold);
+    color: #FFF8EE;
+    font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer;
+    transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+    white-space: nowrap;
+}
+.admin-btn-gold:hover { background: var(--admin-gold-h); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(199,147,45,0.30); }
+.admin-btn-gold:disabled { opacity: 0.5; pointer-events: none; }
+
+.admin-btn-outline {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    height: 44px; padding: 0 1.25rem;
+    border-radius: 9999px;
+    background: transparent;
+    border: 1.5px solid rgba(81,49,2,0.20);
+    color: rgba(81,49,2,0.75);
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+}
+.admin-btn-outline:hover { background: var(--admin-hover); border-color: var(--admin-gold); }
+
+.admin-btn-danger {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    height: 44px; padding: 0 1.25rem;
+    border-radius: 9999px;
+    background: #DC2626; color: white;
+    font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer;
+    transition: background 0.18s, transform 0.18s;
+}
+.admin-btn-danger:hover { background: #b91c1c; transform: translateY(-1px); }
+
+/* ── Modal admin (backdrop blur brun) ── */
+@keyframes adminFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes adminSlideUp {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.admin-modal-backdrop {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(81,49,2,0.35);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: adminFadeIn 200ms ease;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+}
+.admin-modal-container {
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: 1px solid rgba(81,49,2,0.08);
+    box-shadow: 0 32px 80px -12px rgba(81,49,2,0.25);
+    width: 100%;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    animation: adminSlideUp 250ms cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+}
+
+/* ── Status badges admin ── */
+.admin-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.2rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+.admin-badge-success { background: rgba(45,122,79,0.10); color: #2D7A4F; }
+.admin-badge-warning { background: rgba(199,147,45,0.12); color: #C7932D; }
+.admin-badge-danger  { background: rgba(239,68,68,0.10); color: #DC2626; }
+.admin-badge-info    { background: rgba(37,99,235,0.10); color: #2563EB; }
+.admin-badge-muted   { background: rgba(81,49,2,0.06); color: rgba(81,49,2,0.55); }

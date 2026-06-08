@@ -1,29 +1,24 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, ShoppingCart, User, Package } from "lucide-react";
+import { Home, ShoppingCart, Package, User, Heart } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
-
-const TABS = [
-    { to: "/",        icon: Home,         label: "Accueil" },
-    { to: "/?search", icon: Search,        label: "Recherche", isSearch: true },
-    { to: "/panier",  icon: ShoppingCart,  label: "Panier",   hasBadge: true },
-    { to: "/compte",  icon: Package,       label: "Commandes", authRequired: true },
-    { to: "/login",   icon: User,          label: "Compte",   guestOnly: true },
-];
+import { useWishlistStore } from "@/stores/wishlist.store";
 
 export function BottomNav() {
     const location = useLocation();
     const cartCount = useCartStore((s) => s.totalItems());
+    const favCount = useWishlistStore((s) => s.productIds.length);
     const { user } = useAuthStore();
 
-    // Ne pas afficher sur admin
     if (location.pathname.startsWith("/admin")) return null;
 
-    const tabs = TABS.filter(t => {
-        if (t.authRequired && !user) return false;
-        if (t.guestOnly && user) return false;
-        return true;
-    });
+    const tabs = [
+        { to: "/",        icon: Home,         label: "Accueil",   exact: true },
+        { to: user ? "/favoris" : "/login", icon: Heart, label: "Favoris", badge: favCount },
+        { to: "/panier",  icon: ShoppingCart, label: "Panier",    badge: cartCount },
+        { to: user ? "/compte" : "/login", icon: Package, label: "Commandes" },
+        { to: user ? "/compte" : "/login", icon: User, label: user ? user.nom?.split(" ")[0] ?? "Compte" : "Connexion" },
+    ];
 
     return (
         <nav
@@ -32,62 +27,38 @@ export function BottomNav() {
                 background: "rgba(255,248,238,0.97)",
                 backdropFilter: "blur(16px)",
                 borderTop: "1px solid rgba(81,49,2,0.08)",
-                boxShadow: "0 -4px 24px rgba(81,49,2,0.08)",
+                boxShadow: "0 -4px 24px rgba(81,49,2,0.06)",
                 paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
         >
-            <div className="flex items-center" style={{ height: 60 }}>
+            <div className="grid grid-cols-5" style={{ height: 58 }}>
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
-                    const active = tab.to === "/"
-                        ? location.pathname === "/"
-                        : location.pathname.startsWith(tab.to.split("?")[0]);
+                    const active = tab.exact
+                        ? location.pathname === tab.to
+                        : location.pathname.startsWith(tab.to) && tab.to !== "/login";
 
                     return (
                         <Link
-                            key={tab.to}
+                            key={tab.label}
                             to={tab.to}
-                            className="flex-1 flex flex-col items-center justify-center gap-0.5 h-full relative transition-all"
-                            style={{ color: active ? "#C7932D" : "rgba(81,49,2,0.45)", cursor: "pointer" }}
+                            className="flex flex-col items-center justify-center gap-0.5 relative transition-all"
+                            style={{ color: active ? "#C7932D" : "rgba(81,49,2,0.40)", cursor: "pointer" }}
                         >
                             <div className="relative">
-                                <Icon
-                                    style={{
-                                        width: 21, height: 21,
-                                        strokeWidth: active ? 2.2 : 1.7,
-                                        transition: "all 0.2s",
-                                        transform: active ? "scale(1.1)" : "scale(1)",
-                                    }}
-                                />
-                                {tab.hasBadge && cartCount > 0 && (
-                                    <span
-                                        className="absolute flex items-center justify-center text-white"
-                                        style={{
-                                            top: -5, right: -6,
-                                            minWidth: 16, height: 16,
-                                            background: "#C7932D",
-                                            borderRadius: 100,
-                                            fontSize: 9, fontWeight: 800,
-                                            border: "1.5px solid #FFF8EE",
-                                            padding: "0 3px",
-                                        }}
-                                    >
-                                        {cartCount > 9 ? "9+" : cartCount}
+                                <Icon style={{ width: 20, height: 20, strokeWidth: active ? 2.2 : 1.7 }} />
+                                {(tab.badge ?? 0) > 0 && (
+                                    <span className="absolute flex items-center justify-center text-white"
+                                        style={{ top: -5, right: -6, minWidth: 15, height: 15, background: "#C7932D", borderRadius: 100, fontSize: 8, fontWeight: 800, border: "1.5px solid #FFF8EE", padding: "0 2px" }}>
+                                        {(tab.badge ?? 0) > 9 ? "9+" : tab.badge}
                                     </span>
                                 )}
                             </div>
-                            <span style={{
-                                fontSize: 10, fontWeight: active ? 700 : 500,
-                                letterSpacing: active ? "0.01em" : 0,
-                                transition: "all 0.2s",
-                            }}>
+                            <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 500, maxWidth: 56, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {tab.label}
                             </span>
                             {active && (
-                                <div
-                                    className="absolute bottom-0 inset-x-3 rounded-t-full"
-                                    style={{ height: 2.5, background: "#C7932D" }}
-                                />
+                                <div className="absolute top-0 inset-x-4 rounded-b-full" style={{ height: 2.5, background: "#C7932D" }} />
                             )}
                         </Link>
                     );

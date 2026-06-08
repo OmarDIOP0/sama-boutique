@@ -11,13 +11,17 @@ namespace SamaBoutique.Server.Services
         private readonly IOrderRepository _repo;
         private readonly IClientRepository _clientRepo;
         private readonly IStockRepository _stockRepo;
+        private readonly ISaleRepository _saleRepo;
         private static readonly HashSet<string> ValidStatuts = new() { "EnAttente", "Confirmee", "EnPreparation", "Expediee", "Livree", "Annulee", "Retournee" };
+        // Compte système (SuperAdmin seedé) utilisé comme "enregistreur" des ventes en ligne
+        private static readonly Guid SystemUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
-        public OrderService(IOrderRepository repo, IClientRepository clientRepo, IStockRepository stockRepo)
+        public OrderService(IOrderRepository repo, IClientRepository clientRepo, IStockRepository stockRepo, ISaleRepository saleRepo)
         {
             _repo = repo;
             _clientRepo = clientRepo;
             _stockRepo = stockRepo;
+            _saleRepo = saleRepo;
         }
 
         public async Task<PagedResponse<OrderResponse>> GetAllAsync(int page, int pageSize, string? statut, Guid? clientId)
@@ -90,6 +94,31 @@ namespace SamaBoutique.Server.Services
                     UserId = req.ClientId, // Id utilisateur client
                 });
             }
+
+            // ── Enregistrer la vente correspondante (revenu unifié) ──────────────
+            // Le stock est déjà déduit ci-dessus : on ne crée QUE l'enregistrement
+            // de vente pour que Ventes / Tableau de bord / Analytiques le comptent.
+            var sale = new Sale
+            {
+                UserId = SystemUserId,          // vente en ligne (pas de caissier)
+                ClientId = req.ClientId,
+                ModePaiement = req.ModePaiement ?? "MobileMoney",
+                TotalHT = order.TotalHT,
+                TotalTTC = order.TotalTTC,
+                MontantRecu = order.TotalTTC,
+                MonnaieRendue = 0,
+                Statut = "Complétée",
+                Date = DateTime.UtcNow,
+                Items = req.Items.Select(i => new SaleItem
+                {
+                    VariantId = i.VariantId,
+                    Quantite = i.Quantite,
+                    PrixUnitaire = i.PrixUnitaire,
+                    RemisePct = 0,
+                    SousTotal = Math.Round(i.Quantite * i.PrixUnitaire, 2),
+                }).ToList(),
+            };
+            await _saleRepo.AddAsync(sale);
 
             await _repo.SaveChangesAsync();
             return (await GetByIdAsync(order.Id), null);
