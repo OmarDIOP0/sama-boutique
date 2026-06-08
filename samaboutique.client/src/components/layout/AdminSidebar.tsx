@@ -1,26 +1,27 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Package, Tag, Warehouse, ShoppingCart, Receipt,
-  Users, ShoppingBag, BarChart3, Settings, LogOut, ChevronLeft,
+  LayoutDashboard, Package, Tag, Boxes, ShoppingCart, TrendingUp,
+  Users, ClipboardList, BarChart3, Settings, LogOut, ChevronLeft,
   AlertTriangle, ExternalLink,
 } from "lucide-react";
 import { cn, getInitials, roleLabel } from "@/lib/utils";
+import { AdminIcon, type AdminIconColor } from "@/components/admin/ui";
 import { useAuthStore } from "@/stores/auth.store";
 import { useUIStore } from "@/stores/ui.store";
 import { useStockAlerts } from "@/hooks/useProducts";
 import { useLogout } from "@/hooks/useAuth";
 
-const navItems = [
-  { to: "/admin", icon: LayoutDashboard, label: "Tableau de bord", end: true },
-  { to: "/admin/products", icon: Package, label: "Produits" },
-  { to: "/admin/categories", icon: Tag, label: "Catégories" },
-  { to: "/admin/stock", icon: Warehouse, label: "Stock" },
-  { to: "/admin/pos", icon: ShoppingCart, label: "Point de vente" },
-  { to: "/admin/sales", icon: Receipt, label: "Ventes" },
-  { to: "/admin/clients", icon: Users, label: "Clients" },
-  { to: "/admin/orders", icon: ShoppingBag, label: "Commandes" },
-  { to: "/admin/analytics", icon: BarChart3, label: "Analytiques" },
-  { to: "/admin/settings", icon: Settings, label: "Paramètres" },
+const navItems: { to: string; icon: React.ElementType; label: string; color: AdminIconColor; end?: boolean }[] = [
+  { to: "/admin", icon: LayoutDashboard, label: "Tableau de bord", color: "amber", end: true },
+  { to: "/admin/products", icon: Package, label: "Produits", color: "brown" },
+  { to: "/admin/categories", icon: Tag, label: "Catégories", color: "orange" },
+  { to: "/admin/stock", icon: Boxes, label: "Stock", color: "green" },
+  { to: "/admin/pos", icon: ShoppingCart, label: "Point de vente", color: "teal" },
+  { to: "/admin/sales", icon: TrendingUp, label: "Ventes", color: "amber" },
+  { to: "/admin/clients", icon: Users, label: "Clients", color: "purple" },
+  { to: "/admin/orders", icon: ClipboardList, label: "Commandes", color: "blue" },
+  { to: "/admin/analytics", icon: BarChart3, label: "Analytiques", color: "blue" },
+  { to: "/admin/settings", icon: Settings, label: "Paramètres", color: "brown" },
 ];
 
 const DARK = "#513102";
@@ -79,27 +80,26 @@ export function AdminSidebar() {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-3 px-2">
           <ul className="space-y-1">
-            {navItems.map(({ to, icon: Icon, label, end }) => (
+            {navItems.map(({ to, icon: Icon, label, color, end }) => (
               <li key={to}>
                 <NavLink
                   to={to}
                   end={end}
                   className={({ isActive }) =>
                     cn(
-                      "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150",
+                      "group relative flex items-center gap-3 px-2.5 py-2 rounded-xl transition-all duration-150",
                       !sidebarOpen && "lg:justify-center"
                     )
                   }
                   style={({ isActive }) =>
                     isActive
-                      ? { background: "rgba(199,147,45,0.20)", borderLeft: `3px solid ${GOLD}`, paddingLeft: "calc(0.75rem - 3px)" }
+                      ? { background: "rgba(199,147,45,0.20)", borderLeft: `3px solid ${GOLD}`, paddingLeft: "calc(0.625rem - 3px)" }
                       : { borderLeft: "3px solid transparent" }
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon className="w-5 h-5 flex-shrink-0 transition-colors"
-                        style={{ color: isActive ? GOLD : "rgba(255,248,238,0.55)" }} />
+                      <AdminIcon icon={Icon} color={color} size="sm" />
                       {sidebarOpen && (
                         <span className="truncate" style={{ fontSize: 14, fontWeight: isActive ? 600 : 500, color: isActive ? GOLD : "rgba(255,248,238,0.75)" }}>
                           {label}

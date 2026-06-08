@@ -37,7 +37,7 @@ export function AdminDrawer({ open, onClose, title, subtitle, children, footer, 
 
             {/* Panel */}
             <div
-                className="fixed inset-y-0 right-0 z-50 flex flex-col"
+                className="admin-drawer fixed inset-y-0 right-0 z-50 flex flex-col"
                 style={{
                     width: `min(${width}px, 100vw)`,
                     background: "#FFF8EE",

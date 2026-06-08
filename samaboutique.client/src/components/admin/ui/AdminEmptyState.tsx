@@ -1,20 +1,21 @@
 import { Inbox } from "lucide-react";
+import { AdminIcon, type AdminIconColor } from "./AdminIcon";
 
 interface Props {
     icon?: React.ElementType;
+    iconColor?: AdminIconColor;
     title: string;
     description?: string;
     action?: React.ReactNode;
 }
 
-export function AdminEmptyState({ icon: Icon = Inbox, title, description, action }: Props) {
+export function AdminEmptyState({ icon = Inbox, iconColor = "amber", title, description, action }: Props) {
     return (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-            <div className="w-16 h-16 rounded-3xl flex items-center justify-center mb-5"
-                style={{ background: "rgba(199,147,45,0.10)" }}>
-                <Icon className="w-7 h-7" style={{ color: "#C7932D" }} />
+            <div className="mb-5">
+                <AdminIcon icon={icon} color={iconColor} size="lg" />
             </div>
-            <p style={{ fontSize: 17, fontWeight: 700, color: "#513102", fontFamily: "'Playfair Display', serif", marginBottom: 6 }}>
+            <p style={{ fontSize: 17, fontWeight: 700, color: "#513102", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: 6 }}>
                 {title}
             </p>
             {description && (

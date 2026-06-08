@@ -12,6 +12,7 @@ export function useStockMovements(filters: StockMovementsFilters = {}) {
       const res = await stockApi.getMovements(filters);
       return res.data;
     },
+    refetchInterval: 30000,  // temps réel
   });
 }
 

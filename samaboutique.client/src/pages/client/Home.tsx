@@ -179,8 +179,8 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
     };
 
     return (
-        <Link to={`/produit/${product.id}`} className="sama-card block group wurus-card hover:-translate-y-1 transition-all duration-300">
-            <div className="relative overflow-hidden" style={{ borderRadius: "16px 16px 0 0", background: "#F5F0EA", aspectRatio: "1/1" }}>
+        <Link to={`/produit/${product.id}`} className="sama-card block group wurus-card overflow-hidden hover:-translate-y-1 transition-all duration-300">
+            <div className="relative overflow-hidden" style={{ borderRadius: "23px 23px 0 0", background: "#F5F0EA", aspectRatio: "1/1" }}>
                 {product.photos[0] ? (
                     <img
                         src={product.photos[0]} alt={product.nom} loading="lazy"
@@ -212,6 +212,14 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
                         style={{ background: "rgba(81,49,2,0.72)", color: "rgba(255,248,238,0.9)" }}
                     >
                         Épuisé
+                    </div>
+                )}
+
+                {/* Badge promo */}
+                {product.enPromo && inStock && (
+                    <div className="absolute top-2 right-2 px-2 py-1 rounded-lg text-[10px] font-extrabold"
+                        style={{ background: "#DC2626", color: "white", boxShadow: "0 2px 8px rgba(220,38,38,0.35)" }}>
+                        −{product.remisePct}%
                     </div>
                 )}
 
@@ -250,9 +258,16 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
                     {product.nom}
                 </p>
                 <div className="flex items-center justify-between mt-1">
-                    <span className={cn("font-bold", !inStock && "line-through opacity-40")} style={{ fontSize: 13, color: "#C7932D", fontWeight: 700 }}>
-                        {formatPrice(price)}
-                    </span>
+                    {product.enPromo ? (
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="font-bold" style={{ fontSize: 13, color: "#DC2626", fontWeight: 700 }}>{formatPrice(price)}</span>
+                            <span style={{ fontSize: 10.5, color: "rgba(81,49,2,0.40)", textDecoration: "line-through" }}>{formatPrice(product.prixVente)}</span>
+                        </div>
+                    ) : (
+                        <span className={cn("font-bold", !inStock && "line-through opacity-40")} style={{ fontSize: 13, color: "#C7932D", fontWeight: 700 }}>
+                            {formatPrice(price)}
+                        </span>
+                    )}
                     <div className="flex items-center gap-1">
                         <div className="w-1.5 h-1.5 rounded-full" style={{ background: inStock ? "#22C55E" : "#EF4444" }} />
                         <span style={{ fontSize: 9.5, color: "rgba(81,49,2,0.55)" }}>
@@ -906,8 +921,14 @@ export default function Home() {
                         </div>
 
                         <select value={sort} onChange={(e) => setSort(e.target.value)}
-                            className="h-7 pl-2.5 pr-6 rounded-full border border-input bg-background outline-none appearance-none cursor-pointer shrink-0"
-                            style={{ fontSize: 11, fontWeight: 500 }}>
+                            className="rounded-full outline-none appearance-none cursor-pointer shrink-0"
+                            style={{
+                                height: 40, paddingLeft: 16, paddingRight: 36,
+                                border: "1.5px solid rgba(199,147,45,0.30)", background: "white",
+                                fontSize: 14, fontWeight: 600, color: "#513102",
+                                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23C7932D' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+                                backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center",
+                            }}>
                             {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </select>
                     </div>

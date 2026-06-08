@@ -9,5 +9,8 @@ namespace SamaBoutique.Server.Repositories.Interface
         Task<Product?> GetByBarcodeAsync(string barcode);
         Task<List<ProductVariant>> GetStockAlertsAsync();
         Task<bool> BarcodeExistsAsync(string barcode, Guid? excludeId = null);
+        // Promotion groupée : applique/retire une remise % à tous les produits ou une catégorie
+        Task<int> ApplyBulkPromoAsync(decimal remisePct, Guid? categoryId);
+        Task<int> RemoveBulkPromoAsync(Guid? categoryId);
     }
 }

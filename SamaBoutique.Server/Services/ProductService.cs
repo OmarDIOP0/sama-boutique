@@ -75,6 +75,7 @@ namespace SamaBoutique.Server.Services
                 CategoryId = req.CategoryId,
                 PrixAchat = req.PrixAchat,
                 PrixVente = req.PrixVente,
+                PrixPromo = req.PrixPromo > 0 ? req.PrixPromo : null,
                 Statut = req.Statut,
                 Variants = variants
             };
@@ -100,10 +101,15 @@ namespace SamaBoutique.Server.Services
             if (!string.IsNullOrWhiteSpace(req.CodeBarres) && await _repo.BarcodeExistsAsync(newCodeBarres!, id))
                 return (null, "Ce code-barres est déjà utilisé");
 
+            // Validation prix promo : doit être > 0 et < prix de vente
+            if (req.PrixPromo.HasValue && req.PrixPromo.Value > 0 && req.PrixPromo.Value >= req.PrixVente)
+                return (null, "Le prix promo doit être inférieur au prix de vente");
+
             product.Nom = req.Nom; product.Description = req.Description;
             product.CodeBarres = newCodeBarres;
             product.CategoryId = req.CategoryId;
             product.PrixAchat = req.PrixAchat; product.PrixVente = req.PrixVente;
+            product.PrixPromo = req.PrixPromo > 0 ? req.PrixPromo : null;
             product.Statut = req.Statut;
             product.UpdatedAt = DateTime.UtcNow;
 
@@ -128,6 +134,20 @@ namespace SamaBoutique.Server.Services
 
             await _repo.SaveChangesAsync();
             return (true, hasSales ? "Produit archivé (a des ventes associées)" : null);
+        }
+
+        public async Task<(int Count, string? Error)> ApplyBulkPromoAsync(BulkPromoRequest req)
+        {
+            if (req.RemisePct <= 0 || req.RemisePct >= 100)
+                return (0, "La remise doit être comprise entre 1 et 99 %");
+            var count = await _repo.ApplyBulkPromoAsync(req.RemisePct, req.CategoryId);
+            return (count, null);
+        }
+
+        public async Task<(int Count, string? Error)> RemoveBulkPromoAsync(Guid? categoryId)
+        {
+            var count = await _repo.RemoveBulkPromoAsync(categoryId);
+            return (count, null);
         }
 
         public async Task<List<StockAlertResponse>> GetStockAlertsAsync()
@@ -280,9 +300,11 @@ namespace SamaBoutique.Server.Services
             JsonSerializer.Deserialize<List<string>>(p.Photos) ?? new(),
             p.Variants.Select(v => new VariantResponse(
                 v.Id, v.Taille, v.Couleur, v.StockActuel, v.StockMinimum,
-                v.PrixOverride is > 0 ? v.PrixOverride.Value : p.PrixVente,  // treat 0 same as null
+                // Prix variante : override > prix promo produit > prix de vente
+                v.PrixOverride is > 0 ? v.PrixOverride.Value : p.PrixEffectif(),
                 v.IsStockCritical(), v.IsRupture())).ToList(),
-            p.CreatedAt, p.UpdatedAt);
+            p.CreatedAt, p.UpdatedAt,
+            p.PrixPromo, p.EnPromo(), p.RemisePct());
 
         private static CategoryResponse MapCat(Category c) => new(
             c.Id, c.Nom, c.ParentId, c.Parent?.Nom, c.Ordre, c.Products.Count,

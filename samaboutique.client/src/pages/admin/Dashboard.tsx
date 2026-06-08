@@ -10,6 +10,7 @@ import {
 import { useKPIs, useTopProducts, useTopClients, useSalesChart } from "@/hooks/useAnalytics";
 import { useStockAlerts } from "@/hooks/useProducts";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
+import { AdminIcon, type AdminIconColor } from "@/components/admin/ui";
 import { formatPrice, cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -17,9 +18,9 @@ const DARK = "#513102";
 const GOLD = "#C7932D";
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
-function KpiCard({ title, value, icon: Icon, trend, trendLabel, accent, to }: {
+function KpiCard({ title, value, icon: Icon, trend, trendLabel, accent, iconColor, to }: {
     title: string; value: string | number; icon: React.ElementType;
-    trend?: number; trendLabel?: string; accent: string; to: string;
+    trend?: number; trendLabel?: string; accent: string; iconColor: AdminIconColor; to: string;
 }) {
     const TrendIcon = trend == null ? null : trend > 0 ? TrendingUp : trend < 0 ? TrendingDown : Minus;
     const pos = trend != null && trend > 0;
@@ -31,11 +32,9 @@ function KpiCard({ title, value, icon: Icon, trend, trendLabel, accent, to }: {
             <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
                     <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(81,49,2,0.50)" }}>{title}</p>
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: `${accent}1A` }}>
-                        <Icon className="w-5 h-5" style={{ color: accent }} />
-                    </div>
+                    <AdminIcon icon={Icon} color={iconColor} size="md" />
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 800, color: DARK, fontFamily: "'Playfair Display', Georgia, serif", lineHeight: 1.1 }}>
+                <p style={{ fontSize: 32, fontWeight: 800, color: DARK, fontFamily: "'Bricolage Grotesque', sans-serif", lineHeight: 1.1 }}>
                     {value}
                 </p>
                 {(trend != null || trendLabel) && (
@@ -102,11 +101,11 @@ export default function Dashboard() {
         montant: d.montant,
     }));
 
-    const shortcuts = [
-        { to: "/admin/pos", icon: ShoppingCart, label: "Nouvelle vente", color: GOLD },
-        { to: "/admin/products/new", icon: Plus, label: "Nouveau produit", color: "#2563EB" },
-        { to: "/admin/stock", icon: Warehouse, label: "Mouvement stock", color: "#2D7A4F" },
-        { to: "/admin/analytics", icon: FileText, label: "Rapports", color: "#A855F7" },
+    const shortcuts: { to: string; icon: React.ElementType; label: string; color: AdminIconColor }[] = [
+        { to: "/admin/pos", icon: ShoppingCart, label: "Nouvelle vente", color: "teal" },
+        { to: "/admin/products/new", icon: Plus, label: "Nouveau produit", color: "brown" },
+        { to: "/admin/stock", icon: Warehouse, label: "Mouvement stock", color: "green" },
+        { to: "/admin/analytics", icon: FileText, label: "Rapports", color: "blue" },
     ];
 
     return (
@@ -134,10 +133,10 @@ export default function Dashboard() {
                 </div>
             ) : kpis ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    <KpiCard title="CA du jour" value={formatPrice(kpis.caJour)} icon={Banknote} trend={kpis.evolutionCaPct} trendLabel="vs hier" accent={GOLD} to="/admin/sales" />
-                    <KpiCard title="CA du mois" value={formatPrice(kpis.caMois)} icon={TrendingUp} accent="#2D7A4F" to="/admin/analytics" />
-                    <KpiCard title="Commandes (mois)" value={kpis.nbVentesMois} icon={ShoppingBag} trend={kpis.evolutionVentesPct} trendLabel="vs hier" accent="#2563EB" to="/admin/orders" />
-                    <KpiCard title="Clients actifs" value={kpis.nbClientsActifs} icon={Users} accent="#A855F7" to="/admin/clients" />
+                    <KpiCard title="CA du jour" value={formatPrice(kpis.caJour)} icon={Banknote} trend={kpis.evolutionCaPct} trendLabel="vs hier" accent={GOLD} iconColor="amber" to="/admin/sales" />
+                    <KpiCard title="CA du mois" value={formatPrice(kpis.caMois)} icon={TrendingUp} accent="#2D7A4F" iconColor="green" to="/admin/analytics" />
+                    <KpiCard title="Commandes (mois)" value={kpis.nbVentesMois} icon={ShoppingBag} trend={kpis.evolutionVentesPct} trendLabel="vs hier" accent="#2563EB" iconColor="blue" to="/admin/orders" />
+                    <KpiCard title="Clients actifs" value={kpis.nbClientsActifs} icon={Users} accent="#A855F7" iconColor="purple" to="/admin/clients" />
                 </div>
             ) : null}
 
@@ -226,9 +225,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {shortcuts.map((s) => (
                     <Link key={s.to} to={s.to} className="admin-card p-5 flex items-center gap-3 transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ cursor: "pointer" }}>
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}1A` }}>
-                            <s.icon className="w-5 h-5" style={{ color: s.color }} />
-                        </div>
+                        <AdminIcon icon={s.icon} color={s.color} size="md" />
                         <span style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{s.label}</span>
                     </Link>
                 ))}

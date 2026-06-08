@@ -3,6 +3,7 @@ import { Heart, ArrowRight, Trash2 } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useWishlistStore } from "@/stores/wishlist.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { StoreIcon } from "@/components/shared/StoreIcon";
 import { ProductCard } from "./Home";
 
 export default function Favorites() {
@@ -58,9 +59,8 @@ export default function Favorites() {
                 ) : favProducts.length === 0 ? (
                     /* Empty state */
                     <div className="flex flex-col items-center justify-center py-24 text-center">
-                        <div className="w-16 h-16 rounded-3xl flex items-center justify-center mb-5"
-                            style={{ background: "rgba(239,68,68,0.06)" }}>
-                            <Heart className="w-7 h-7" style={{ color: "#ef4444" }} />
+                        <div className="mb-5">
+                            <StoreIcon icon={Heart} color="amber" size="lg" />
                         </div>
                         <h2 style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Playfair Display', serif", fontStyle: "italic", color: "#513102", marginBottom: 8 }}>
                             Aucun favori pour le moment

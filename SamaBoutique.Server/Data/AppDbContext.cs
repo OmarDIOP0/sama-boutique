@@ -91,6 +91,7 @@ namespace SamaBoutique.Server.Data
                 e.Property(p => p.Nom).IsRequired().HasMaxLength(200);
                 e.Property(p => p.PrixAchat).HasColumnType("decimal(18,2)");
                 e.Property(p => p.PrixVente).HasColumnType("decimal(18,2)");
+                e.Property(p => p.PrixPromo).HasColumnType("decimal(18,2)");
                 e.HasIndex(p => p.CodeBarres).IsUnique().HasFilter("[CodeBarres] IS NOT NULL");
                 e.HasOne(p => p.Category).WithMany(c => c.Products)
                  .HasForeignKey(p => p.CategoryId).OnDelete(DeleteBehavior.Restrict);

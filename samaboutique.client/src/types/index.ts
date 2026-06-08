@@ -111,6 +111,9 @@ export interface Product {
   variants: ProductVariant[];
   createdAt: string;
   updatedAt: string;
+  prixPromo?: number | null;
+  enPromo?: boolean;
+  remisePct?: number;
 }
 
 export interface VariantCreateRequest {
@@ -139,6 +142,7 @@ export interface ProductUpdateRequest {
   categoryId: string;     // Guid
   prixAchat: number;
   prixVente: number;
+  prixPromo?: number | null;
   statut?: string;
 }
 

@@ -11,6 +11,8 @@ namespace SamaBoutique.Server.Services.Interface
         Task<(ProductResponse? Product, string? Error)> CreateAsync(ProductCreateRequest req);
         Task<(ProductResponse? Product, string? Error)> UpdateAsync(Guid id, ProductUpdateRequest req);
         Task<(bool Ok, string? Error)> DeleteAsync(Guid id);
+        Task<(int Count, string? Error)> ApplyBulkPromoAsync(BulkPromoRequest req);
+        Task<(int Count, string? Error)> RemoveBulkPromoAsync(Guid? categoryId);
         Task<List<StockAlertResponse>> GetStockAlertsAsync();
         Task<List<CategoryResponse>> GetCategoriesAsync();
         Task<(CategoryResponse? Cat, string? Error)> CreateCategoryAsync(CategoryCreateRequest req);

@@ -6,7 +6,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 export function ClientLayout() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="client-scope min-h-screen flex flex-col wurus-bg">
       <ClientNavbar />
       <main className="flex-1 flex flex-col">
         <ErrorBoundary>

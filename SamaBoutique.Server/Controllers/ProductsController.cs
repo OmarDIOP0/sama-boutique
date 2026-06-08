@@ -65,6 +65,24 @@ namespace SamaBoutique.Server.Controllers
             return ApiOk<object>(null!, message ?? "Produit supprimé");
         }
 
+        // ── Promotion groupée ────────────────────────────────────────────────
+        [HttpPost("promo/bulk")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
+        public async Task<IActionResult> ApplyBulkPromo([FromBody] BulkPromoRequest req)
+        {
+            var (count, error) = await _svc.ApplyBulkPromoAsync(req);
+            if (error != null) return ApiFail(error);
+            return ApiOk<object>(new { count }, $"Promotion appliquée à {count} produit(s)");
+        }
+
+        [HttpDelete("promo/bulk")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
+        public async Task<IActionResult> RemoveBulkPromo([FromQuery] Guid? categoryId)
+        {
+            var (count, _) = await _svc.RemoveBulkPromoAsync(categoryId);
+            return ApiOk<object>(new { count }, $"Promotion retirée de {count} produit(s)");
+        }
+
         [HttpGet("alerts/stock")]
         public async Task<IActionResult> GetStockAlerts()
             => ApiOk(await _svc.GetStockAlertsAsync());

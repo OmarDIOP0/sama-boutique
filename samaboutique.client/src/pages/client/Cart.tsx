@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowRight, Package } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
+import { StoreIcon } from "@/components/shared/StoreIcon";
 import { formatPrice } from "@/lib/utils";
 
 export default function Cart() {
@@ -11,11 +12,8 @@ export default function Cart() {
         return (
             <div className="min-h-screen wurus-bg">
                 <div className="max-w-2xl mx-auto px-4 py-24 text-center">
-                    <div
-                        className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-                        style={{ background: "rgba(199,147,45,0.10)" }}
-                    >
-                        <ShoppingCart className="w-7 h-7" style={{ color: "#C7932D" }} />
+                    <div className="flex justify-center mb-5">
+                        <StoreIcon icon={ShoppingCart} color="amber" size="lg" />
                     </div>
                     <h1
                         style={{

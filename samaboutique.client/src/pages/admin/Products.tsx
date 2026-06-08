@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Edit, Trash2, Package } from "lucide-react";
+import { Plus, Edit, Trash2, Package, Tag, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useProducts, useDeleteProduct, useCategories } from "@/hooks/useProducts";
+import { useProducts, useDeleteProduct, useCategories, useApplyBulkPromo, useRemoveBulkPromo } from "@/hooks/useProducts";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import {
-  AdminPageHeader, AdminSearchInput, AdminConfirmDialog, AdminStatusBadge, AdminExportButtons,
+  AdminPageHeader, AdminSearchInput, AdminConfirmDialog, AdminStatusBadge, AdminExportButtons, AdminModal,
 } from "@/components/admin/ui";
 import { exportToCSV, exportToPDF, type ExportColumn } from "@/lib/export";
 import { formatPrice, debounce, cn } from "@/lib/utils";
@@ -39,6 +39,9 @@ export default function Products() {
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [statut, setStatut] = useState<string>("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoPct, setPromoPct] = useState(10);
+  const [promoCategoryId, setPromoCategoryId] = useState<string>("");
 
   const { data, isLoading } = useProducts({
     page,
@@ -51,6 +54,8 @@ export default function Products() {
   // Export : tous les produits filtrés
   const { data: allData } = useProducts({ page: 1, pageSize: 1000, search: debouncedSearch || undefined, categoryId, statut: statut || undefined });
   const deleteMutation = useDeleteProduct();
+  const applyPromoMutation = useApplyBulkPromo();
+  const removePromoMutation = useRemoveBulkPromo();
 
   const handleSearch = useCallback(
     debounce((val: string) => { setDebouncedSearch(val); setPage(1); }, 300),
@@ -119,7 +124,15 @@ export default function Products() {
       key: "prixVente",
       header: "Prix vente",
       render: (row) => (
-        <span style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>{formatPrice(row.prixVente)}</span>
+        row.enPromo ? (
+          <div className="flex items-center gap-2">
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#DC2626" }}>{formatPrice(row.prixPromo ?? 0)}</span>
+            <span style={{ fontSize: 12, color: "rgba(81,49,2,0.40)", textDecoration: "line-through" }}>{formatPrice(row.prixVente)}</span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "rgba(220,38,38,0.10)", color: "#DC2626" }}>-{row.remisePct}%</span>
+          </div>
+        ) : (
+          <span style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>{formatPrice(row.prixVente)}</span>
+        )
       ),
     },
     {
@@ -173,8 +186,11 @@ export default function Products() {
 
   return (
     <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
-      <AdminPageHeader icon={Package} title="Produits" subtitle="Gérez votre catalogue">
+      <AdminPageHeader icon={Package} iconColor="brown" title="Produits" subtitle="Gérez votre catalogue">
         <AdminExportButtons onCSV={handleExportCSV} onPDF={handleExportPDF} />
+        <button onClick={() => setPromoOpen(true)} className="admin-btn-outline" style={{ height: 40 }}>
+          <Tag className="w-4 h-4" /> Promotion
+        </button>
         <Link to="/admin/products/new" className="admin-btn-gold">
           <Plus className="w-4 h-4" />
           Nouveau produit
@@ -211,6 +227,69 @@ export default function Products() {
         emptyTitle="Aucun produit"
         emptyDescription="Créez votre premier produit pour commencer"
       />
+
+      {/* Modal promotion groupée */}
+      <AdminModal
+        open={promoOpen}
+        onClose={() => setPromoOpen(false)}
+        icon={Tag}
+        title="Promotion groupée"
+        subtitle="Appliquer une remise sur plusieurs produits"
+        persistent={applyPromoMutation.isPending || removePromoMutation.isPending}
+        footer={
+          <>
+            <button
+              onClick={() => removePromoMutation.mutate(promoCategoryId || undefined, {
+                onSuccess: (res: any) => { toast.success(res?.data?.message ?? "Promotions retirées"); setPromoOpen(false); },
+                onError: (e) => toast.error((e as Error).message),
+              })}
+              disabled={removePromoMutation.isPending}
+              className="admin-btn-outline" style={{ borderColor: "rgba(220,38,38,0.3)", color: "#DC2626" }}>
+              {removePromoMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Retirer les promos
+            </button>
+            <button
+              onClick={() => applyPromoMutation.mutate({ remisePct: promoPct, categoryId: promoCategoryId || undefined }, {
+                onSuccess: (res: any) => { toast.success(res?.data?.message ?? "Promotion appliquée"); setPromoOpen(false); },
+                onError: (e) => toast.error((e as Error).message),
+              })}
+              disabled={applyPromoMutation.isPending}
+              className="admin-btn-gold">
+              {applyPromoMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Appliquer −{promoPct}%
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-5">
+          <div>
+            <label className="block mb-2" style={{ fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(81,49,2,0.55)" }}>
+              Remise (%)
+            </label>
+            <div className="flex items-center gap-3">
+              <input type="range" min={5} max={70} step={5} value={promoPct}
+                onChange={(e) => setPromoPct(Number(e.target.value))}
+                className="flex-1" style={{ accentColor: "#C7932D" }} />
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#C7932D", minWidth: 56, fontFamily: "'Bricolage Grotesque', sans-serif" }}>−{promoPct}%</span>
+            </div>
+          </div>
+          <div>
+            <label className="block mb-2" style={{ fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(81,49,2,0.55)" }}>
+              Cible
+            </label>
+            <select value={promoCategoryId} onChange={(e) => setPromoCategoryId(e.target.value)}
+              className="w-full" style={{ height: 46, borderRadius: 12, padding: "0 14px", border: "1.5px solid rgba(81,49,2,0.14)", background: "white", fontSize: 15, color: "#513102", cursor: "pointer" }}>
+              <option value="">Tous les produits actifs</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>Catégorie : {c.nom}</option>)}
+            </select>
+          </div>
+          <div className="p-3 rounded-xl" style={{ background: "rgba(199,147,45,0.06)", border: "1px solid rgba(199,147,45,0.15)" }}>
+            <p style={{ fontSize: 12.5, color: "rgba(81,49,2,0.65)", lineHeight: 1.5 }}>
+              💡 Le prix promo = prix de vente − {promoPct}%. Le prix barré sera affiché sur la boutique avec un badge <strong>−{promoPct}%</strong>.
+            </p>
+          </div>
+        </div>
+      </AdminModal>
 
       <AdminConfirmDialog
         open={!!deleteId}

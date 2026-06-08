@@ -77,6 +77,7 @@ export const productUpdateSchema = z.object({
   categoryId: z.string().min(1, "Catégorie requise"),
   prixAchat: z.number({ coerce: true }).min(0, "Prix d'achat invalide"),
   prixVente: z.number({ coerce: true }).positive("Prix de vente invalide"),
+  prixPromo: z.number({ coerce: true }).min(0).optional(),
   statut: z.enum(["Actif", "Inactif", "Archivé"]).default("Actif"),
 });
 

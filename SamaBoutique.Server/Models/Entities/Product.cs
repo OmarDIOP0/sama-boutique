@@ -10,6 +10,7 @@
         public Category Category { get; set; } = null!;
         public decimal PrixAchat { get; set; }
         public decimal PrixVente { get; set; }
+        public decimal? PrixPromo { get; set; }  // prix promotionnel (si défini et < PrixVente)
         public string Statut { get; set; } = "Actif"; // Actif, Inactif, Archivé
         public string Photos { get; set; } = "[]";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -18,5 +19,14 @@
         public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItem>();
 
         public decimal GetMarge() => PrixVente > 0 ? Math.Round((PrixVente - PrixAchat) / PrixVente * 100, 2) : 0;
+
+        // Le produit est en promo si un prix promo valide est défini
+        public bool EnPromo() => PrixPromo.HasValue && PrixPromo.Value > 0 && PrixPromo.Value < PrixVente;
+
+        // Prix effectif (promo si applicable, sinon prix de vente)
+        public decimal PrixEffectif() => EnPromo() ? PrixPromo!.Value : PrixVente;
+
+        // Pourcentage de réduction
+        public int RemisePct() => EnPromo() ? (int)Math.Round((PrixVente - PrixPromo!.Value) / PrixVente * 100) : 0;
     }
 }

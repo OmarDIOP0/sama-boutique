@@ -135,7 +135,7 @@ export default function Stock() {
 
   return (
     <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
-      <AdminPageHeader icon={Warehouse} title="Stock" subtitle="Mouvements et niveaux de stock">
+      <AdminPageHeader icon={Warehouse} iconColor="green" title="Stock" subtitle="Mouvements et niveaux de stock">
         <button onClick={() => setShowModal(true)} className="admin-btn-gold">
           <Plus className="w-4 h-4" />
           Nouveau mouvement

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { AdminIcon, type AdminIconColor } from "./AdminIcon";
 
 interface AdminModalProps {
     open: boolean;
@@ -8,6 +9,7 @@ interface AdminModalProps {
     title?: string;
     subtitle?: string;
     icon?: React.ElementType;
+    iconColor?: AdminIconColor;
     children: React.ReactNode;
     footer?: React.ReactNode;
     /** largeur max — défaut 560px */
@@ -17,7 +19,7 @@ interface AdminModalProps {
 }
 
 export function AdminModal({
-    open, onClose, title, subtitle, icon: Icon, children, footer,
+    open, onClose, title, subtitle, icon: Icon, iconColor = "amber", children, footer,
     maxWidth = 560, persistent = false,
 }: AdminModalProps) {
     // Fermeture via Échap
@@ -54,12 +56,7 @@ export function AdminModal({
                     <div className="flex items-center justify-between px-7 py-5 flex-shrink-0"
                         style={{ borderBottom: "1px solid rgba(81,49,2,0.08)" }}>
                         <div className="flex items-center gap-3">
-                            {Icon && (
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                                    style={{ background: "rgba(199,147,45,0.10)" }}>
-                                    <Icon className="w-5 h-5" style={{ color: "#C7932D" }} />
-                                </div>
-                            )}
+                            {Icon && <AdminIcon icon={Icon} color={iconColor} size="sm" />}
                             <div>
                                 {title && (
                                     <h3 style={{ fontSize: 18, fontWeight: 700, color: "#513102", fontFamily: "'Playfair Display', Georgia, serif" }}>

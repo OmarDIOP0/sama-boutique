@@ -1,22 +1,20 @@
+import { AdminIcon, type AdminIconColor } from "./AdminIcon";
+
 interface Props {
     icon?: React.ElementType;
+    iconColor?: AdminIconColor;
     title: string;
     subtitle?: string;
     children?: React.ReactNode; // zone d'action à droite (CTA)
 }
 
-export function AdminPageHeader({ icon: Icon, title, subtitle, children }: Props) {
+export function AdminPageHeader({ icon, iconColor = "amber", title, subtitle, children }: Props) {
     return (
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3.5">
-                {Icon && (
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: "rgba(199,147,45,0.10)" }}>
-                        <Icon className="w-6 h-6" style={{ color: "#C7932D" }} />
-                    </div>
-                )}
+                {icon && <AdminIcon icon={icon} color={iconColor} size="md" />}
                 <div>
-                    <h1 style={{ fontSize: 26, fontWeight: 700, color: "#513102", fontFamily: "'Playfair Display', Georgia, serif", lineHeight: 1.1 }}>
+                    <h1 style={{ fontSize: 26, fontWeight: 700, color: "#513102", fontFamily: "'Bricolage Grotesque', sans-serif", lineHeight: 1.1 }}>
                         {title}
                     </h1>
                     {subtitle && (

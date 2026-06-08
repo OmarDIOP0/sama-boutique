@@ -55,6 +55,7 @@ export default function ProductEdit() {
         description: product.description ?? "",
         prixAchat: product.prixAchat,
         prixVente: product.prixVente,
+        prixPromo: product.prixPromo ?? undefined,
         categoryId: product.categoryId,
         statut: product.statut as "Actif" | "Inactif" | "Archivé",
         codeBarres: product.codeBarres ?? "",
@@ -147,6 +148,21 @@ export default function ProductEdit() {
                     placeholder="0"
                   />
                   {errors.prixVente && <p className="mt-1 text-xs text-danger">{errors.prixVente.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest mb-2.5" style={{ color: "#C7932D" }}>
+                    Prix promo (XOF)
+                  </label>
+                  <input
+                    {...register("prixPromo")}
+                    type="number"
+                    step="any"
+                    className="input-field"
+                    style={{ borderColor: "rgba(199,147,45,0.4)" }}
+                    placeholder="Laisser vide = pas de promo"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">Doit être inférieur au prix de vente. Affiche un prix barré sur la boutique.</p>
                 </div>
 
                 <div>

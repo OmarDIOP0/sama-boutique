@@ -20,7 +20,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sql => sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)
-    ));
+    )
+    // Ignore l'avertissement bloquant dû au décalage outils EF / runtime
+    .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // ── Authentication JWT ────────────────────────────────────
 var jwtSecret = builder.Configuration["Jwt:Secret"]

@@ -11,6 +11,7 @@ export function useOrders(filters: OrdersFilters = {}) {
       const res = await ordersApi.getAll(filters);
       return res.data;
     },
+    refetchInterval: 20000,  // temps réel : nouvelles commandes auto
   });
 }
 

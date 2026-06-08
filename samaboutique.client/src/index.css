@@ -7,10 +7,52 @@
 
 /* Fonts */
 body {
-  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-family: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
 }
-h1, h2, h3, .display, .font-display {
+
+/* Selects — remplacer le bleu natif par l'or de la charte (surbrillance dropdown) */
+select {
+  accent-color: #C7932D;
+}
+select option:checked,
+select option:hover,
+select option:focus {
+  background: #C7932D !important;
+  color: #FFF8EE !important;
+}
+/* Titres par défaut → Bricolage Grotesque.
+   Les accroches italiques gardent Playfair via leur style inline (priorité). */
+h1, h2, h3 {
+  font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+}
+/* Classe explicite si besoin de Playfair (accroches italiques) */
+.display, .font-display, .font-serif {
   font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Cursor pointer sur tous les éléments interactifs (storefront) */
+.client-scope a,
+.client-scope button,
+.client-scope [role="button"],
+.client-scope select,
+.client-scope label[for],
+.client-scope summary,
+.client-scope .cursor-pointer {
+  cursor: pointer;
+}
+
+/* Police Bricolage Grotesque sur TOUTE l'application — y compris les portails
+   (modals, drawers, checkout Wave) qui sont rendus hors des scopes habituels.
+   Écrase tous les styles Playfair inline. */
+body,
+body * {
+  font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif !important;
+}
+/* Préserver le monospace (références de commande, codes) */
+.font-mono,
+code, pre, kbd,
+[style*="monospace"] {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace !important;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -204,7 +246,7 @@ h1, h2, h3, .display, .font-display {
     }
     body {
         @apply bg-background text-foreground antialiased;
-        font-family: 'Instrument Sans', system-ui, sans-serif;
+        font-family: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
         font-size: 0.9375rem;    /* 15px */
         line-height: 1.6;
     }

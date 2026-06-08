@@ -3,12 +3,13 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     ShoppingCart, ArrowLeft, Check, Package,
-    Truck, Shield, Plus, Minus, ChevronLeft, ChevronRight,
-    Heart, Share2, Tag,
+    Truck, Plus, Minus, ChevronLeft, ChevronRight,
+    Heart, Share2, Tag, Lock, CheckCircle, RotateCcw,
 } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCartStore } from "@/stores/cart.store";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
+import { StoreIcon } from "@/components/shared/StoreIcon";
 import { formatPrice, cn } from "@/lib/utils";
 import type { ProductVariant } from "@/types";
 
@@ -646,14 +647,17 @@ export default function ProductDetail() {
                                 </motion.div>
 
                                 {/* Trust badges */}
-                                <motion.div variants={fadeUp} style={{ display: "flex", gap: 10 }}>
+                                <motion.div variants={fadeUp} className="grid grid-cols-2 gap-2.5">
                                     {[
-                                        { icon: Truck, label: "Livraison Dakar 24-48h" },
-                                        { icon: Shield, label: "Paiement sécurisé" },
-                                    ].map(({ icon: Icon, label }) => (
-                                        <div key={label} className="pd-trust">
-                                            <Icon style={{ width: 15, height: 15, color: "#C7932D", flexShrink: 0 }} />
-                                            <span>{label}</span>
+                                        { icon: Truck, label: "Livraison Dakar 24-48h", color: "green" as const },
+                                        { icon: Lock, label: "Paiement sécurisé Wave", color: "amber" as const },
+                                        { icon: CheckCircle, label: "Qualité garantie", color: "green" as const },
+                                        { icon: RotateCcw, label: "Retours faciles", color: "brown" as const },
+                                    ].map(({ icon: Icon, label, color }) => (
+                                        <div key={label} className="flex items-center gap-2.5 p-2.5 rounded-xl"
+                                            style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(81,49,2,0.06)" }}>
+                                            <StoreIcon icon={Icon} color={color} size="sm" />
+                                            <span style={{ fontSize: 12.5, fontWeight: 500, color: "#513102" }}>{label}</span>
                                         </div>
                                     ))}
                                 </motion.div>

@@ -62,7 +62,7 @@ export default function Analytics() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-[1600px]">
-      <AdminPageHeader icon={BarChart3} title="Analytiques" subtitle="Analyse détaillée de votre activité" />
+      <AdminPageHeader icon={BarChart3} iconColor="blue" title="Analytiques" subtitle="Analyse détaillée de votre activité" />
 
       {/* KPI cards */}
       {kpisLoading ? (

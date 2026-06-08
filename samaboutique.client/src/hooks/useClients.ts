@@ -11,6 +11,7 @@ export function useClients(filters: ClientsFilters = {}) {
       const res = await clientsApi.getAll(filters);
       return res.data;
     },
+    refetchInterval: 30000,  // temps réel
   });
 }
 

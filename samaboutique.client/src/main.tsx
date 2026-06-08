@@ -16,7 +16,12 @@ import "./index.css";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30 * 1000,
+      // Données considérées "fraîches" 5s → refetch rapide après ce délai
+      staleTime: 5 * 1000,
+      // Temps réel : rafraîchit quand l'onglet reprend le focus ou que le réseau revient
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
       retry: (failureCount, error) => {
         const msg = (error as Error)?.message ?? "";
         if (msg.includes("401") || msg.includes("403") || msg.includes("404")) return false;

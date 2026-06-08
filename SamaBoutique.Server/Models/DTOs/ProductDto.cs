@@ -8,7 +8,8 @@
     decimal PrixAchat,
     decimal PrixVente,
     string Statut,
-    List<VariantCreateRequest> Variants
+    List<VariantCreateRequest> Variants,
+    decimal? PrixPromo = null
 );
 
     public record ProductUpdateRequest(
@@ -18,7 +19,14 @@
         Guid CategoryId,
         decimal PrixAchat,
         decimal PrixVente,
-        string Statut
+        string Statut,
+        decimal? PrixPromo = null
+    );
+
+    // Promotion groupée : applique une remise % à tous les produits ou une catégorie
+    public record BulkPromoRequest(
+        decimal RemisePct,        // ex: 20 = -20%
+        Guid? CategoryId = null   // null = tous les produits
     );
 
     public record VariantCreateRequest(
@@ -51,7 +59,10 @@
         List<string> Photos,
         List<VariantResponse> Variants,
         DateTime CreatedAt,
-        DateTime UpdatedAt
+        DateTime UpdatedAt,
+        decimal? PrixPromo,
+        bool EnPromo,
+        int RemisePct
     );
 
     public record VariantResponse(

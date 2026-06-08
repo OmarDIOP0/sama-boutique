@@ -18,7 +18,8 @@ export function useProducts(filters: ProductsFilters = {}) {
       const res = await productsApi.getAll(filters);
       return res.data;
     },
-    staleTime: 30 * 1000,
+    staleTime: 5 * 1000,
+    refetchInterval: 30000,  // temps réel : stock / promo / nouveaux produits
   });
 }
 
@@ -69,6 +70,23 @@ export function useStockAlerts() {
       return res.data.data;
     },
     refetchInterval: 5 * 60 * 1000,
+  });
+}
+
+export function useApplyBulkPromo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ remisePct, categoryId }: { remisePct: number; categoryId?: string }) =>
+      productsApi.applyBulkPromo(remisePct, categoryId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PRODUCTS_KEY] }),
+  });
+}
+
+export function useRemoveBulkPromo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (categoryId?: string) => productsApi.removeBulkPromo(categoryId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PRODUCTS_KEY] }),
   });
 }
 

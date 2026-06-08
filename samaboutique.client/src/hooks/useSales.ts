@@ -12,6 +12,7 @@ export function useSales(filters: SalesFilters = {}) {
       const res = await salesApi.getAll(filters);
       return res.data;
     },
+    refetchInterval: 20000,  // temps réel : nouvelles ventes auto
   });
 }
 

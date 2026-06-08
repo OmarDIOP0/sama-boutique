@@ -7,3 +7,4 @@ export { AdminPagination } from "./AdminPagination";
 export { AdminEmptyState } from "./AdminEmptyState";
 export { AdminDrawer } from "./AdminDrawer";
 export { AdminExportButtons } from "./AdminExportButtons";
+export { AdminIcon, type AdminIconColor, type AdminIconSize } from "./AdminIcon";

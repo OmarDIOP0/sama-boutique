@@ -164,7 +164,7 @@ export default function Categories() {
 
   return (
     <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
-      <AdminPageHeader icon={Tag} title="Catégories" subtitle="Organisez vos produits par catégorie">
+      <AdminPageHeader icon={Tag} iconColor="orange" title="Catégories" subtitle="Organisez vos produits par catégorie">
         <button onClick={openCreate} className="admin-btn-gold">
           <Plus className="w-4 h-4" />
           Nouvelle catégorie

@@ -41,5 +41,34 @@ namespace SamaBoutique.Server.Repositories
 
         public async Task<bool> BarcodeExistsAsync(string barcode, Guid? excludeId = null)
             => await _db.Products.AnyAsync(p => p.CodeBarres == barcode && (!excludeId.HasValue || p.Id != excludeId.Value));
+
+        // Applique une remise % : PrixPromo = PrixVente × (1 - remise/100)
+        public async Task<int> ApplyBulkPromoAsync(decimal remisePct, Guid? categoryId)
+        {
+            var q = _db.Products.Where(p => p.Statut == "Actif");
+            if (categoryId.HasValue) q = q.Where(p => p.CategoryId == categoryId.Value);
+
+            var products = await q.ToListAsync();
+            var factor = 1 - remisePct / 100m;
+            foreach (var p in products)
+            {
+                p.PrixPromo = Math.Round(p.PrixVente * factor, 2);
+                p.UpdatedAt = DateTime.UtcNow;
+            }
+            await _db.SaveChangesAsync();
+            return products.Count;
+        }
+
+        // Retire les promos (PrixPromo = null)
+        public async Task<int> RemoveBulkPromoAsync(Guid? categoryId)
+        {
+            var q = _db.Products.Where(p => p.PrixPromo != null);
+            if (categoryId.HasValue) q = q.Where(p => p.CategoryId == categoryId.Value);
+
+            var products = await q.ToListAsync();
+            foreach (var p in products) { p.PrixPromo = null; p.UpdatedAt = DateTime.UtcNow; }
+            await _db.SaveChangesAsync();
+            return products.Count;
+        }
     }
 }

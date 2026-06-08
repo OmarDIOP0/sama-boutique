@@ -110,7 +110,7 @@ export default function Orders() {
 
   return (
     <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
-      <AdminPageHeader icon={ShoppingBag} title="Commandes" subtitle="Gérez les commandes en ligne">
+      <AdminPageHeader icon={ShoppingBag} iconColor="blue" title="Commandes" subtitle="Gérez les commandes en ligne">
         <AdminExportButtons onCSV={handleExportCSV} onPDF={handleExportPDF} />
       </AdminPageHeader>
 

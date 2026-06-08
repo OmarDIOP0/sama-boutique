@@ -121,7 +121,7 @@ export default function Clients() {
 
   return (
     <div className="p-6 lg:p-8 space-y-5 max-w-[1600px]">
-      <AdminPageHeader icon={Users} title="Clients" subtitle="Gérez votre base clients" />
+      <AdminPageHeader icon={Users} iconColor="purple" title="Clients" subtitle="Gérez votre base clients" />
 
       <AdminSearchInput
         value={search}

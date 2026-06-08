@@ -30,6 +30,12 @@ export const productsApi = {
   delete: (id: string) =>
     api.delete(`/api/products/${id}`),
 
+  // Promotion groupée
+  applyBulkPromo: (remisePct: number, categoryId?: string) =>
+    api.post<ApiResponse<{ count: number }>>("/api/products/promo/bulk", { remisePct, categoryId: categoryId ?? null }),
+  removeBulkPromo: (categoryId?: string) =>
+    api.delete<ApiResponse<{ count: number }>>(`/api/products/promo/bulk${categoryId ? `?categoryId=${categoryId}` : ""}`),
+
   getStockAlerts: () =>
     api.get<ApiResponse<StockAlert[]>>("/api/products/alerts/stock"),
 
