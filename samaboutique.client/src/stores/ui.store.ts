@@ -1,14 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface Notification {
+export type NotificationType =
+  | "success" | "error" | "warning" | "info"
+  | "payment"            // paiement reçu
+  | "order"              // nouvelle commande en ligne
+  | "stock";             // alerte de stock bas/rupture
+
+export interface Notification {
   id: string;
-  type: "success" | "error" | "warning" | "info" | "payment";
+  type: NotificationType;
+  title?: string;        // titre court optionnel
   message: string;
   createdAt: string;
   read: boolean;
   amount?: number;       // montant du paiement (notifs de type payment)
   refId?: string;        // id de la vente/commande liée
+  link?: string;         // route admin vers laquelle naviguer au clic
 }
 
 interface UIState {
