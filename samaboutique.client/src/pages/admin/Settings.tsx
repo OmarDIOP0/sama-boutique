@@ -10,9 +10,9 @@ import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/validat
 import { useChangePassword } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/stores/auth.store";
-import { useSettingsStore } from "@/stores/settings.store";
+import { DeliverySettings } from "@/components/admin/DeliverySettings";
 import { AdminPageHeader } from "@/components/admin/ui";
-import { cn, roleLabel, formatPrice } from "@/lib/utils";
+import { cn, roleLabel } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
 const GOLD = "#C7932D";
@@ -89,10 +89,6 @@ export default function Settings() {
   const [colorTheme, setColorTheme] = useState<ColorThemeId>(saved.colorTheme);
   const [fontSize, setFontSize] = useState<FontSizeId>(saved.fontSize);
 
-  // Zones de livraison (store persisté)
-  const { zones, freeDeliveryThreshold, setZoneFee, setZoneDelai, addZone, removeZone, setFreeThreshold } = useSettingsStore();
-  const [newZoneNom, setNewZoneNom] = useState("");
-  const [newZoneFee, setNewZoneFee] = useState(2000);
 
   useEffect(() => { applyColorTheme(colorTheme); applyFontSize(fontSize); }, []);
 
@@ -233,79 +229,8 @@ export default function Settings() {
             </Card>
           )}
 
-          {/* ── Livraison (éditable) ── */}
-          {active === "livraison" && (
-            <Card title="Zones de livraison" icon={Truck}>
-              <p style={{ fontSize: 14, color: "rgba(81,49,2,0.55)", marginBottom: 16 }}>
-                Configurez les lieux de livraison et leurs tarifs. Ces frais s'appliquent automatiquement au paiement client.
-              </p>
-              <div className="space-y-2.5">
-                {zones.map((z) => (
-                  <div key={z.id} className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(81,49,2,0.06)" }}>
-                    <Truck className="w-5 h-5 flex-shrink-0" style={{ color: GOLD }} />
-                    <span className="flex-1 min-w-0 truncate" style={{ fontSize: 15, fontWeight: 600, color: DARK }}>{z.nom}</span>
-                    {/* Délai */}
-                    <input
-                      value={z.delai}
-                      onChange={(e) => setZoneDelai(z.id, e.target.value)}
-                      className="text-center outline-none"
-                      style={{ width: 80, height: 40, borderRadius: 10, border: "1.5px solid rgba(81,49,2,0.12)", fontSize: 14, color: "rgba(81,49,2,0.65)" }}
-                      placeholder="24h"
-                    />
-                    {/* Frais */}
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number" min={0} step={500}
-                        value={z.fee}
-                        onChange={(e) => setZoneFee(z.id, Number(e.target.value))}
-                        className="text-right outline-none"
-                        style={{ width: 90, height: 40, borderRadius: 10, border: `1.5px solid ${GOLD}40`, fontSize: 15, fontWeight: 700, color: GOLD, paddingRight: 8 }}
-                      />
-                      <span style={{ fontSize: 13, color: "rgba(81,49,2,0.45)" }}>F</span>
-                    </div>
-                    <button onClick={() => removeZone(z.id)} aria-label="Supprimer"
-                      className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
-                      style={{ color: "rgba(81,49,2,0.45)", cursor: "pointer" }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.10)"; (e.currentTarget as HTMLElement).style.color = "#DC2626"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(81,49,2,0.45)"; }}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Ajouter une zone */}
-              <div className="flex flex-wrap items-center gap-2 mt-4 p-3.5 rounded-xl" style={{ background: "rgba(199,147,45,0.05)", border: "1px dashed rgba(199,147,45,0.30)" }}>
-                <input value={newZoneNom} onChange={(e) => setNewZoneNom(e.target.value)} placeholder="Nouvelle zone (ex: Kaolack)"
-                  className="flex-1 min-w-40 outline-none" style={{ height: 42, borderRadius: 10, border: "1.5px solid rgba(81,49,2,0.12)", padding: "0 12px", fontSize: 15, color: DARK }} />
-                <input type="number" min={0} step={500} value={newZoneFee} onChange={(e) => setNewZoneFee(Number(e.target.value))} placeholder="Frais"
-                  className="outline-none text-right" style={{ width: 100, height: 42, borderRadius: 10, border: "1.5px solid rgba(81,49,2,0.12)", padding: "0 10px", fontSize: 15, color: DARK }} />
-                <button onClick={() => {
-                  if (newZoneNom.trim().length < 2) { toast.error("Nom de zone requis"); return; }
-                  addZone({ nom: newZoneNom.trim(), fee: newZoneFee, delai: "48h" });
-                  setNewZoneNom(""); setNewZoneFee(2000); toast.success("Zone ajoutée");
-                }} className="admin-btn-gold" style={{ height: 42 }}>
-                  <Plus className="w-4 h-4" /> Ajouter
-                </button>
-              </div>
-
-              {/* Livraison gratuite */}
-              <div className="flex items-center justify-between gap-3 p-4 rounded-xl mt-4" style={{ background: "rgba(45,122,79,0.05)", border: "1px solid rgba(45,122,79,0.15)" }}>
-                <div className="flex items-center gap-2">
-                  <span style={{ fontSize: 15, fontWeight: 600, color: DARK }}>🎁 Livraison gratuite dès</span>
-                  <input type="number" min={0} step={5000} value={freeDeliveryThreshold}
-                    onChange={(e) => setFreeThreshold(Number(e.target.value))}
-                    className="text-right outline-none" style={{ width: 110, height: 40, borderRadius: 10, border: "1.5px solid rgba(45,122,79,0.30)", fontSize: 15, fontWeight: 700, color: "#2D7A4F", paddingRight: 8 }} />
-                  <span style={{ fontSize: 14, color: "rgba(81,49,2,0.55)" }}>F CFA</span>
-                </div>
-                <span style={{ fontSize: 13, color: "rgba(81,49,2,0.45)" }}>{freeDeliveryThreshold > 0 ? formatPrice(freeDeliveryThreshold) : "Désactivé"}</span>
-              </div>
-
-              <p style={{ fontSize: 12.5, color: "rgba(81,49,2,0.45)", marginTop: 12 }}>
-                💾 Les modifications sont enregistrées automatiquement.
-              </p>
-            </Card>
-          )}
+          {/* ── Livraison (backend) ── */}
+          {active === "livraison" && <DeliverySettings />}
 
           {/* ── Notifications ── */}
           {active === "notifications" && (

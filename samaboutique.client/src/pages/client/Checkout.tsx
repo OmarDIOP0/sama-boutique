@@ -17,7 +17,7 @@ import { checkoutSchema, type CheckoutFormData } from "@/lib/validators";
 import { useCreateOrder } from "@/hooks/useOrders";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
-import { useSettingsStore } from "@/stores/settings.store";
+import { useDeliveryZones } from "@/hooks/useDelivery";
 import { formatPrice } from "@/lib/utils";
 
 // ─── Données géographiques ───────────────────────────────────────────────────
@@ -447,7 +447,7 @@ export default function Checkout() {
     const navigate = useNavigate();
     const cart = useCartStore();
     const { user } = useAuthStore();
-    const settings = useSettingsStore();
+    const { data: zones = [] } = useDeliveryZones(true);
     const createOrderMutation = useCreateOrder();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedRegion, setSelectedRegion] = useState("Dakar");
@@ -473,9 +473,16 @@ export default function Checkout() {
 
     const regionInfo = REGIONS_DATA[selectedRegion];
     const subtotal = cart.total();
-    // Frais de livraison depuis les zones configurées par l'admin (Paramètres)
-    const configuredFee = settings.feeFor(selectedRegion);
-    const qualifiesFree = settings.freeDeliveryThreshold > 0 && subtotal >= settings.freeDeliveryThreshold;
+    // Frais de livraison depuis les zones backend (Paramètres → Livraison)
+    const target = (selectedCommune || selectedDept || selectedRegion).toLowerCase();
+    const matchedZone =
+        zones.find((z) => z.communes.some((c) => c.toLowerCase() === target)) ??
+        zones.find((z) => z.region?.toLowerCase() === selectedRegion.toLowerCase()) ??
+        zones.find((z) => z.nom.toLowerCase().includes(selectedRegion.toLowerCase())) ??
+        zones.find((z) => z.tarif > 0);
+    const configuredFee = matchedZone?.tarif ?? 1000;
+    const freeFrom = matchedZone?.freeFrom ?? 0;
+    const qualifiesFree = freeFrom > 0 && subtotal >= freeFrom;
     const deliveryFee = (deliveryMode === "relais" || qualifiesFree) ? 0 : configuredFee;
     const grandTotal = subtotal + deliveryFee;
     const deptOptions = Object.keys(regionInfo?.departements ?? {});
