@@ -6,6 +6,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLogout, useUpdateProfile } from "@/hooks/useAuth";
 import { formatPrice, formatDate } from "@/lib/utils";
+import { PushSettings } from "@/components/shared/PushSettings";
 
 /* ── Status helpers ─────────────────────────────────────────────────────────── */
 const STATUS_MAP: Record<string, { label: string; bg: string; text: string; dot: string }> = {
@@ -164,6 +165,11 @@ export default function Account() {
                             </div>
                         </div>
                     )}
+                </div>
+
+                {/* ── Notifications push ───────────────────────────────────────────── */}
+                <div className="wurus-card p-6 sm:p-7">
+                    <PushSettings variant="client" />
                 </div>
 
                 {/* ── Orders section ───────────────────────────────────────────────── */}

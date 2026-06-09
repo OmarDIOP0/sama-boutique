@@ -9,6 +9,23 @@ $mdf = "C:\Users\itdevstg1\SamaBoutiqueDb.mdf"
 $ldf = "C:\Users\itdevstg1\SamaBoutiqueDb_log.ldf"
 $serverDir = "C:\Users\itdevstg1\source\repos\SamaBoutique\SamaBoutique.Server"
 
+# ── Étape 0 : libérer les ports occupés par des processus zombies ──────
+# (cause fréquente du "le serveur ne démarre pas" : un ancien Vite garde
+#  le port 59263 que le backend attend pour le client React → 502).
+Write-Host "`n=== 0. Libération des ports (59263 client, 5011/7088 backend) ===" -ForegroundColor Cyan
+foreach ($port in 59263, 5011, 7088) {
+    $conns = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+    foreach ($c in $conns) {
+        $proc = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue
+        if ($proc) {
+            Write-Host ("Port {0} occupé par {1} (PID {2}) → arrêt" -f $port, $proc.ProcessName, $proc.Id) -ForegroundColor Yellow
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+Start-Sleep -Seconds 1
+Write-Host "Ports libérés." -ForegroundColor Green
+
 Write-Host "`n=== 1. Vérification de LocalDB MSSQLLocalDB ===" -ForegroundColor Cyan
 $state = (SqlLocalDB info MSSQLLocalDB 2>&1 | Select-String "State:").ToString()
 Write-Host $state

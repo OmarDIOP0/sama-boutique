@@ -347,6 +347,24 @@ export interface OrdersFilters {
   clientId?: string;      // Guid
 }
 
+// ─── Push notifications ──────────────────────────────────────────────────────
+
+export interface PushPreferences {
+  subscribed: boolean;
+  notifyOrders: boolean;
+  notifyPromotions: boolean;
+  notifyStock: boolean;
+}
+
+export interface PushSubscribeRequest {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+  userAgent?: string;
+  notifyOrders?: boolean;
+  notifyPromotions?: boolean;
+  notifyStock?: boolean;
+}
+
 // ─── Analytics ───────────────────────────────────────────────────────────────
 
 export interface KPIs {

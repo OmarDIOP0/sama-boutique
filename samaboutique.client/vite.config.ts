@@ -38,31 +38,77 @@ const target = env.ASPNETCORE_HTTPS_PORT
         ? env.ASPNETCORE_URLS.split(';')[0]
         : 'http://localhost:5011';
 
+// ── Tueur de service worker en DEV ───────────────────────────────────────────
+// Un ancien SW de prod peut rester enregistré et servir un cache obsolète
+// (page blanche, manifest cassé, /api intercepté). Ce plugin, actif uniquement
+// en `vite dev`, répond à /sw.js et /dev-sw.js par un worker qui se désinscrit
+// et vide tous les caches → auto-réparation au prochain chargement.
+const swKillerDev = {
+    name: 'sw-killer-dev',
+    apply: 'serve' as const,
+    configureServer(server: import('vite').ViteDevServer) {
+        const KILL = `// SW auto-destructeur (dev)
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => {
+  e.waitUntil((async () => {
+    try { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } catch (_) {}
+    try { await self.registration.unregister(); } catch (_) {}
+    const cs = await self.clients.matchAll({ type: 'window' });
+    cs.forEach((c) => { try { c.navigate(c.url); } catch (_) {} });
+  })());
+});
+`;
+        server.middlewares.use((req, res, next) => {
+            const url = (req.url || '').split('?')[0];
+            if (url === '/sw.js' || url === '/dev-sw.js') {
+                res.setHeader('Content-Type', 'application/javascript');
+                res.setHeader('Cache-Control', 'no-store');
+                res.end(KILL);
+                return;
+            }
+            next();
+        });
+    },
+};
+
 export default defineConfig({
     plugins: [
+        swKillerDev,
         plugin(),
         tailwindcss(),
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+            includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-icon.svg'],
+            // Service worker DÉSACTIVÉ en développement (npm run dev) : il
+            // provoquait des pages blanches / shells en cache. Le SW (et donc
+            // le Web Push) reste actif dans les builds de production.
+            // Pour tester le push en local : `npm run build` puis `npx vite preview`.
+            devOptions: {
+                enabled: false,
+            },
             manifest: {
-                name: 'SamaBoutique',
+                name: 'SamaBoutique — Boutique en ligne',
                 short_name: 'SamaBoutique',
-                description: 'Plateforme de gestion de boutique',
-                theme_color: '#7F77DD',
-                background_color: '#ffffff',
+                description: 'SamaBoutique : mode et accessoires au Sénégal. Commandez et suivez vos livraisons.',
+                theme_color: '#513102',
+                background_color: '#FFF8EE',
                 display: 'standalone',
                 orientation: 'portrait',
                 scope: '/',
                 start_url: '/',
+                lang: 'fr',
+                categories: ['shopping', 'business'],
                 icons: [
                     { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
                     { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-                    { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+                    { src: 'pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+                    { src: 'pwa-icon.svg', sizes: 'any', type: 'image/svg+xml' }
                 ]
             },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+                // Handlers Web Push injectés dans le SW généré
+                importScripts: ['push-sw.js'],
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/localhost.*\/api\/.*/i,

@@ -12,10 +12,22 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { router } from "./router";
 import { initTheme } from "./hooks/useTheme";
+import { PwaChrome } from "./components/pwa/PwaChrome";
 import "./index.css";
 
 // Applique le thème (clair/sombre) avant le rendu pour éviter le flash
 initTheme();
+
+// En développement : purge tout service worker / cache résiduel qui pourrait
+// servir un shell obsolète (page blanche). Le SW n'est utilisé qu'en production.
+if (import.meta.env.DEV && typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations()
+    .then((regs) => regs.forEach((r) => r.unregister()))
+    .catch(() => { /* ignore */ });
+  if (typeof caches !== "undefined") {
+    caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => { /* ignore */ });
+  }
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +53,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      <PwaChrome />
       <RouterProvider router={router} />
       <Toaster
         position="bottom-right"

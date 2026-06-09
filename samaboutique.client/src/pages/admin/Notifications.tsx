@@ -4,6 +4,7 @@ import { Bell, CheckCheck, Trash2, Check, X } from "lucide-react";
 import { useUIStore } from "@/stores/ui.store";
 import type { Notification, NotificationType } from "@/stores/ui.store";
 import { AdminPageHeader, AdminEmptyState } from "@/components/admin/ui";
+import { PushSettings } from "@/components/shared/PushSettings";
 import { notifVisual, relativeTime, dayGroupLabel } from "@/lib/notifications";
 import { formatPrice } from "@/lib/utils";
 
@@ -88,6 +89,11 @@ export default function Notifications() {
           </>
         )}
       </AdminPageHeader>
+
+      {/* Notifications push navigateur */}
+      <div className="admin-card p-5">
+        <PushSettings variant="admin" />
+      </div>
 
       {/* Filtres */}
       <div className="flex flex-wrap items-center gap-2">
