@@ -143,6 +143,31 @@ namespace SamaBoutique.Server.Services
             return BuildUserInfo(user);
         }
 
+        public async Task<(UserInfoDto?, string?)> UpdateProfileAsync(Guid userId, UpdateProfileRequest req)
+        {
+            var user = await _userRepo.GetWithRoleAsync(userId);
+            if (user == null) return (null, "Utilisateur introuvable");
+
+            if (string.IsNullOrWhiteSpace(req.Nom) || req.Nom.Trim().Length < 2)
+                return (null, "Le nom doit contenir au moins 2 caractères");
+
+            // Email : vérifier l'unicité s'il change
+            if (!string.IsNullOrWhiteSpace(req.Email))
+            {
+                var newEmail = req.Email.Trim().ToLower();
+                if (newEmail != user.Email && await _userRepo.EmailExistsAsync(newEmail))
+                    return (null, "Cette adresse email est déjà utilisée");
+                user.Email = newEmail;
+            }
+
+            user.Nom = req.Nom.Trim();
+            if (!string.IsNullOrWhiteSpace(req.Telephone))
+                user.Telephone = req.Telephone.Replace(" ", "").Trim();
+
+            await _userRepo.SaveChangesAsync();
+            return (BuildUserInfo(user), null);
+        }
+
         // ── Helpers ─────────────────────────────
         private (string Token, DateTime Expiry) GenerateAccessToken(User user)
         {
@@ -192,7 +217,7 @@ namespace SamaBoutique.Server.Services
         private static UserInfoDto BuildUserInfo(User user)
         {
             var perms = JsonSerializer.Deserialize<List<string>>(user.Role.Permissions) ?? new();
-            return new(user.Id, user.Nom, user.Email, user.Role.Nom, perms);
+            return new(user.Id, user.Nom, user.Email, user.Role.Nom, perms, user.Telephone);
         }
 
         // Pour les clients : clientId = userId (même entité après migration du seed)

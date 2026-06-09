@@ -30,6 +30,9 @@
     public record ForgotPasswordRequest(string Email);
     public record ResetPasswordRequest(string Token, string NewPassword, string ConfirmNewPassword);
 
+    // Mise à jour du profil par l'utilisateur connecté (client)
+    public record UpdateProfileRequest(string Nom, string? Telephone, string? Email);
+
     public record LoginResponse(
         string AccessToken,
         string RefreshToken,
@@ -42,7 +45,8 @@
         string Nom,
         string Email,
         string Role,
-        List<string> Permissions
+        List<string> Permissions,
+        string? Telephone = null
     );
 
 }

@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Search, ShoppingCart, User, Menu, X, Heart } from "lucide-react";
+import { Search, ShoppingCart, User, Menu, X, Heart, Sun, Moon, Package, LogOut } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
+import { useTheme } from "@/hooks/useTheme";
+import { useLogout } from "@/hooks/useAuth";
+import { useClickOutside } from "@/hooks/useClickOutside";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS_BASE = [
@@ -34,6 +37,10 @@ export function ClientNavbar() {
     const cartCount = useCartStore((s) => s.totalItems());
     const favCount = useWishlistStore((s) => s.productIds.length);
     const { user } = useAuthStore();
+    const { theme, toggleTheme } = useTheme();
+    const logoutMutation = useLogout();
+    const [profileOpen, setProfileOpen] = useState(false);
+    const profileRef = useClickOutside<HTMLDivElement>(() => setProfileOpen(false), profileOpen);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -357,6 +364,13 @@ export function ClientNavbar() {
                                 <Search style={{ width: 18, height: 18 }} />
                             </button>
 
+                            {/* Mode sombre */}
+                            <button onClick={toggleTheme} className="nb-icon" title={theme === "dark" ? "Mode clair" : "Mode sombre"} aria-label="Changer le thème">
+                                {theme === "dark"
+                                    ? <Sun style={{ width: 18, height: 18 }} />
+                                    : <Moon style={{ width: 18, height: 18 }} />}
+                            </button>
+
                             {/* Wishlist */}
                             <Link to={user ? "/favoris" : "/login"} className="nb-icon" title="Mes favoris">
                                 <Heart style={{ width: 18, height: 18 }} />
@@ -390,11 +404,68 @@ export function ClientNavbar() {
 
                             {/* Auth — TOUJOURS VISIBLE */}
                             {user ? (
-                                <Link to="/compte">
-                                    <div className="nb-avatar">
-                                        {user.nom?.[0]?.toUpperCase()}
-                                    </div>
-                                </Link>
+                                <div className="relative" ref={profileRef}>
+                                    <button onClick={() => setProfileOpen((v) => !v)} aria-label="Mon compte">
+                                        <div className="nb-avatar">{user.nom?.[0]?.toUpperCase()}</div>
+                                    </button>
+
+                                    {profileOpen && (
+                                        <div className="absolute right-0 rounded-2xl overflow-hidden"
+                                            style={{
+                                                top: "calc(100% + 10px)", width: 230, zIndex: 60,
+                                                background: "var(--w-surface, #FFF8EE)",
+                                                border: "1px solid rgba(81,49,2,0.08)",
+                                                boxShadow: "0 12px 40px rgba(81,49,2,0.15)",
+                                                animation: "nbSlideDown 0.18s ease",
+                                            }}>
+                                            {/* En-tête */}
+                                            <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid rgba(81,49,2,0.06)" }}>
+                                                <div className="nb-avatar" style={{ width: 40, height: 40 }}>{user.nom?.[0]?.toUpperCase()}</div>
+                                                <div className="min-w-0">
+                                                    <p className="truncate" style={{ fontSize: 14, fontWeight: 700, color: "#513102" }}>{user.nom}</p>
+                                                    <p className="truncate" style={{ fontSize: 12, color: "rgba(81,49,2,0.50)" }}>{(user as any).telephone ?? user.email}</p>
+                                                </div>
+                                            </div>
+                                            {/* Liens */}
+                                            <div className="py-1.5">
+                                                {[
+                                                    { icon: Package, label: "Mes commandes", to: "/compte" },
+                                                    { icon: Heart, label: "Mes favoris", to: "/favoris" },
+                                                ].map(({ icon: Icon, label, to }) => (
+                                                    <Link key={to} to={to} onClick={() => setProfileOpen(false)}
+                                                        className="flex items-center gap-3 px-4 py-2.5 transition-colors"
+                                                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(199,147,45,0.06)"; }}
+                                                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                                                        <Icon style={{ width: 17, height: 17, color: "rgba(81,49,2,0.55)" }} />
+                                                        <span style={{ fontSize: 14, color: "#513102" }}>{label}</span>
+                                                    </Link>
+                                                ))}
+                                                {/* Mode sombre */}
+                                                <div className="flex items-center justify-between px-4 py-2.5">
+                                                    <div className="flex items-center gap-3">
+                                                        {theme === "dark" ? <Sun style={{ width: 17, height: 17, color: "rgba(81,49,2,0.55)" }} /> : <Moon style={{ width: 17, height: 17, color: "rgba(81,49,2,0.55)" }} />}
+                                                        <span style={{ fontSize: 14, color: "#513102" }}>Mode sombre</span>
+                                                    </div>
+                                                    <button onClick={toggleTheme} className="relative rounded-full transition-all"
+                                                        style={{ width: 38, height: 21, background: theme === "dark" ? "#C7932D" : "rgba(81,49,2,0.15)" }}>
+                                                        <span className="absolute top-0.5 rounded-full bg-white shadow transition-transform"
+                                                            style={{ width: 17, height: 17, left: theme === "dark" ? 19 : 2 }} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {/* Déconnexion */}
+                                            <div className="py-1.5" style={{ borderTop: "1px solid rgba(81,49,2,0.06)" }}>
+                                                <button onClick={() => { setProfileOpen(false); logoutMutation.mutate(); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 transition-colors"
+                                                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(220,38,38,0.06)"; }}
+                                                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                                                    <LogOut style={{ width: 17, height: 17, color: "#DC2626" }} />
+                                                    <span style={{ fontSize: 14, fontWeight: 500, color: "#DC2626" }}>Déconnexion</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
                                 <Link to="/login" className="nb-auth ml-1">
                                     Connexion

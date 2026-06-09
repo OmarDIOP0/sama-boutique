@@ -11,7 +11,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { router } from "./router";
+import { initTheme } from "./hooks/useTheme";
 import "./index.css";
+
+// Applique le thème (clair/sombre) avant le rendu pour éviter le flash
+initTheme();
 
 const queryClient = new QueryClient({
   defaultOptions: {

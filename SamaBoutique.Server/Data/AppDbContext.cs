@@ -26,6 +26,7 @@ namespace SamaBoutique.Server.Data
         public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
         public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+        public DbSet<DeliveryZone> DeliveryZones => Set<DeliveryZone>();
         protected override void OnModelCreating(ModelBuilder mb)
         {
             base.OnModelCreating(mb);
@@ -210,6 +211,15 @@ namespace SamaBoutique.Server.Data
                 e.HasKey(al => al.Id);
                 e.HasOne(al => al.User).WithMany(u => u.AuditLogs)
                  .HasForeignKey(al => al.UserId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ── DeliveryZone ──────────────────────────────────
+            mb.Entity<DeliveryZone>(e =>
+            {
+                e.HasKey(d => d.Id);
+                e.Property(d => d.Nom).IsRequired().HasMaxLength(150);
+                e.Property(d => d.Tarif).HasColumnType("decimal(18,2)");
+                e.Property(d => d.FreeFrom).HasColumnType("decimal(18,2)");
             });
 
             SeedData(mb);

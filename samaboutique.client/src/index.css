@@ -659,3 +659,96 @@ code, pre, kbd,
 .admin-badge-danger  { background: rgba(239,68,68,0.10); color: #DC2626; }
 .admin-badge-info    { background: rgba(37,99,235,0.10); color: #2563EB; }
 .admin-badge-muted   { background: rgba(81,49,2,0.06); color: rgba(81,49,2,0.55); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MODE SOMBRE — data-theme="dark"
+   Remappe les surfaces + les couleurs inline hardcodées (#513102 / rgb(81,49,2))
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="dark"] { color-scheme: dark; }
+
+/* ── Fonds de page (grille) ── */
+[data-theme="dark"] body { background-color: #1A0E06; }
+[data-theme="dark"] .admin-bg,
+[data-theme="dark"] .wurus-bg {
+  background-color: #1A0E06 !important;
+  background-image:
+    linear-gradient(rgba(255,248,238,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,248,238,0.04) 1px, transparent 1px) !important;
+}
+
+/* ── Cards → sombres ── */
+[data-theme="dark"] .admin-card {
+  background: #2E1A0A !important;
+  border-color: rgba(255,248,238,0.08) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+[data-theme="dark"] .wurus-card {
+  background: rgba(46,26,10,0.82) !important;
+  border-color: rgba(255,248,238,0.07) !important;
+}
+
+/* ── Sidebar admin (encore plus sombre) ── */
+[data-theme="dark"] .admin-scope aside { background: #0F0805 !important; }
+
+/* ── Topbar / navbar (blur sombre) ── */
+[data-theme="dark"] .admin-scope > div > header,
+[data-theme="dark"] header[class*="sticky"] {
+  background: rgba(26,14,6,0.92) !important;
+  border-bottom-color: rgba(255,248,238,0.08) !important;
+}
+
+/* ── Remap du texte brun foncé inline → cream clair ── */
+[data-theme="dark"] [style*="#513102"],
+[data-theme="dark"] [style*="rgb(81, 49, 2)"],
+[data-theme="dark"] [style*="rgb(81,49,2)"] {
+  color: #F5E6D0 !important;
+}
+/* Texte brun translucide (0.5–0.7) → cream translucide */
+[data-theme="dark"] [style*="81,49,2,0.5"],
+[data-theme="dark"] [style*="81,49,2,0.55"],
+[data-theme="dark"] [style*="81,49,2,0.6"],
+[data-theme="dark"] [style*="81,49,2,0.65"],
+[data-theme="dark"] [style*="81,49,2,0.7"] {
+  color: rgba(255,248,238,0.60) !important;
+}
+/* Texte brun très atténué (0.4–0.45) */
+[data-theme="dark"] [style*="81,49,2,0.4"],
+[data-theme="dark"] [style*="81,49,2,0.45"] {
+  color: rgba(255,248,238,0.42) !important;
+}
+
+/* ── Champs de saisie sombres ── */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea,
+[data-theme="dark"] .wurus-input,
+[data-theme="dark"] .input-field,
+[data-theme="dark"] .search-input {
+  background: #241408 !important;
+  color: #F5E6D0 !important;
+  border-color: rgba(255,248,238,0.14) !important;
+}
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder { color: rgba(255,248,238,0.35) !important; }
+
+/* ── Modals / drawers sombres ── */
+[data-theme="dark"] .admin-modal-container,
+[data-theme="dark"] .admin-drawer {
+  background: #2E1A0A !important;
+}
+[data-theme="dark"] .admin-modal-backdrop { background: rgba(0,0,0,0.55) !important; }
+
+/* ── Tables admin (DataTable) ── */
+[data-theme="dark"] .admin-card thead tr { background: rgba(255,248,238,0.04) !important; }
+[data-theme="dark"] .admin-card tbody tr { border-bottom-color: rgba(255,248,238,0.06) !important; }
+
+/* ── Or légèrement plus clair en sombre pour le contraste ── */
+[data-theme="dark"] [style*="#C7932D"] { color: #D4A43A !important; }
+
+/* Surfaces blanches/translucides claires → sombres */
+[data-theme="dark"] [style*="rgba(255,255,255,0.6)"],
+[data-theme="dark"] [style*="rgba(255,255,255,0.7)"],
+[data-theme="dark"] [style*="rgba(255, 255, 255, 0.6)"],
+[data-theme="dark"] [style*="rgba(255, 255, 255, 0.7)"] {
+  background: rgba(46,26,10,0.55) !important;
+}

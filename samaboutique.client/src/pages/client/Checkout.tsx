@@ -17,6 +17,7 @@ import { checkoutSchema, type CheckoutFormData } from "@/lib/validators";
 import { useCreateOrder } from "@/hooks/useOrders";
 import { useCartStore } from "@/stores/cart.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSettingsStore } from "@/stores/settings.store";
 import { formatPrice } from "@/lib/utils";
 
 // ─── Données géographiques ───────────────────────────────────────────────────
@@ -446,6 +447,7 @@ export default function Checkout() {
     const navigate = useNavigate();
     const cart = useCartStore();
     const { user } = useAuthStore();
+    const settings = useSettingsStore();
     const createOrderMutation = useCreateOrder();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedRegion, setSelectedRegion] = useState("Dakar");
@@ -557,7 +559,7 @@ export default function Checkout() {
                                             <div>
                                                 <p style={{ fontSize: 13, fontWeight: 700, color: "#513102" }}>Livraison à domicile</p>
                                                 <p style={{ fontSize: 11, color: "rgba(81,49,2,0.55)", marginTop: 1 }}>Livré chez vous sous 24–48h</p>
-                                                <p style={{ fontSize: 12, fontWeight: 700, color: "#C7932D", marginTop: 3 }}>{formatPrice(regionInfo?.fee ?? 1000)}</p>
+                                                <p style={{ fontSize: 12, fontWeight: 700, color: "#C7932D", marginTop: 3 }}>{qualifiesFree ? "Gratuit 🎁" : formatPrice(configuredFee)}</p>
                                             </div>
                                         </button>
                                         <button type="button" onClick={() => setDeliveryMode("relais")}
@@ -589,7 +591,7 @@ export default function Checkout() {
                                                     {Object.keys(REGIONS_DATA).map(r => <option key={r} value={r}>{r}</option>)}
                                                 </select>
                                                 <p style={{ fontSize: 11, color: "#C7932D", marginTop: 4, fontWeight: 600 }}>
-                                                    Livraison : {formatPrice(regionInfo?.fee ?? 0)}
+                                                    Livraison : {qualifiesFree ? "Gratuit 🎁" : formatPrice(configuredFee)}
                                                 </p>
                                             </div>
                                             <div>

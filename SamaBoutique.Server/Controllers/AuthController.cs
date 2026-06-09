@@ -70,5 +70,15 @@ namespace SamaBoutique.Server.Controllers
             if (user == null) return ApiNotFound("Utilisateur introuvable");
             return ApiOk(user);
         }
+
+        /// <summary>Mise à jour du profil (utilisateur connecté)</summary>
+        [HttpPut("me")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest req)
+        {
+            var (user, error) = await _auth.UpdateProfileAsync(CurrentUserId, req);
+            if (error != null) return ApiFail(error);
+            return ApiOk(user!, "Profil mis à jour");
+        }
     }
 }

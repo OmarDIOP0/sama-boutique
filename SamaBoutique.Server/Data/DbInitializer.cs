@@ -67,6 +67,28 @@ namespace SamaBoutique.Server.Data
 
                 await db.SaveChangesAsync();
             }
+
+            // ── Seed : zones de livraison (vraies données sénégalaises) ──────────
+            if (!await db.DeliveryZones.AnyAsync())
+            {
+                db.DeliveryZones.AddRange(
+                    new DeliveryZone { Nom = "Dakar Centre", Region = "Dakar", Tarif = 1500, DelaiMinH = 2, DelaiMaxH = 4, Ordre = 1,
+                        Communes = "[\"Plateau\",\"Médina\",\"Fann\",\"Point E\",\"Amitié\",\"Mermoz\",\"Sacré-Cœur\",\"Liberté\",\"Grand Dakar\",\"HLM\"]" },
+                    new DeliveryZone { Nom = "Dakar Ouest", Region = "Dakar", Tarif = 2000, DelaiMinH = 3, DelaiMaxH = 6, Ordre = 2,
+                        Communes = "[\"Almadies\",\"Ngor\",\"Ouakam\",\"Yoff\",\"Parcelles Assainies\",\"Cambérène\"]" },
+                    new DeliveryZone { Nom = "Dakar Est", Region = "Dakar", Tarif = 2500, DelaiMinH = 4, DelaiMaxH = 8, Ordre = 3,
+                        Communes = "[\"Pikine\",\"Guédiawaye\",\"Thiaroye\",\"Keur Massar\",\"Yeumbeul\",\"Malika\",\"Dalifort\",\"Mbao\"]" },
+                    new DeliveryZone { Nom = "Banlieue Sud", Region = "Dakar", Tarif = 3500, DelaiMinH = 24, DelaiMaxH = 48, Ordre = 4,
+                        Communes = "[\"Rufisque\",\"Bargny\",\"Diamniadio\",\"Sébikotane\",\"Sangalkam\"]" },
+                    new DeliveryZone { Nom = "Thiès & environs", Region = "Thiès", Tarif = 5000, DelaiMinH = 24, DelaiMaxH = 72, Ordre = 5,
+                        Communes = "[\"Thiès\",\"Tivaouane\",\"Mbour\",\"Joal-Fadiouth\",\"Saly\"]" },
+                    new DeliveryZone { Nom = "Autres régions Sénégal", Region = "National", Tarif = 7000, DelaiMinH = 48, DelaiMaxH = 120, Ordre = 6,
+                        Communes = "[\"Saint-Louis\",\"Ziguinchor\",\"Kaolack\",\"Tambacounda\",\"Kolda\",\"Louga\",\"Matam\",\"Fatick\",\"Kaffrine\",\"Kédougou\",\"Sédhiou\",\"Diourbel\"]" },
+                    new DeliveryZone { Nom = "Retrait boutique", Region = "Dakar", Tarif = 0, DelaiMinH = 0, DelaiMaxH = 0, Ordre = 0,
+                        Description = "Retirez votre commande directement en boutique (gratuit)", Communes = "[]" }
+                );
+                await db.SaveChangesAsync();
+            }
         }
     }
 }

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { LogOut, ArrowRight, Package, ShoppingBag, ChevronRight, ChevronLeft } from "lucide-react";
+import { LogOut, ArrowRight, Package, ShoppingBag, ChevronRight, ChevronLeft, Pencil, Loader2, X } from "lucide-react";
+import { toast } from "sonner";
 import { useOrders } from "@/hooks/useOrders";
 import { useAuthStore } from "@/stores/auth.store";
-import { useLogout } from "@/hooks/useAuth";
+import { useLogout, useUpdateProfile } from "@/hooks/useAuth";
 import { formatPrice, formatDate } from "@/lib/utils";
 
 /* ── Status helpers ─────────────────────────────────────────────────────────── */
@@ -32,12 +33,27 @@ function StatusBadge({ statut }: { statut: string }) {
 export default function Account() {
     const { user } = useAuthStore();
     const logoutMutation = useLogout();
+    const updateProfile = useUpdateProfile();
     const [page, setPage] = useState(1);
     const { data: ordersData } = useOrders({ page, pageSize: 8 });
+
+    // Édition profil
+    const [editing, setEditing] = useState(false);
+    const [nom, setNom] = useState(user?.nom ?? "");
+    const [telephone, setTelephone] = useState((user as any)?.telephone ?? "");
 
     const orders = ordersData?.data ?? [];
     const pagination = ordersData?.pagination;
     const initial = user?.nom?.[0]?.toUpperCase() ?? "?";
+
+    const openEdit = () => { setNom(user?.nom ?? ""); setTelephone((user as any)?.telephone ?? ""); setEditing(true); };
+    const saveProfile = () => {
+        if (nom.trim().length < 2) { toast.error("Le nom doit contenir au moins 2 caractères"); return; }
+        updateProfile.mutate(
+            { nom: nom.trim(), telephone: telephone.trim() || undefined },
+            { onSuccess: () => { setEditing(false); toast.success("Profil mis à jour"); }, onError: (e) => toast.error((e as Error).message) }
+        );
+    };
 
     return (
         <div className="min-h-screen wurus-bg">
@@ -95,20 +111,59 @@ export default function Account() {
                             </span>
                         </div>
 
-                        {/* Logout */}
-                        <button
-                            onClick={() => logoutMutation.mutate()}
-                            className="flex items-center gap-2 h-9 px-4 rounded-full text-[12px] font-medium transition-all hover:opacity-75"
-                            style={{
-                                border: "1.5px solid rgba(81,49,2,0.12)",
-                                color: "rgba(81,49,2,0.55)",
-                                background: "transparent",
-                            }}
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                            Déconnexion
-                        </button>
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={openEdit}
+                                className="flex items-center gap-2 h-9 px-4 rounded-full text-[12px] font-semibold transition-all hover:opacity-90"
+                                style={{ background: "rgba(199,147,45,0.10)", color: "#C7932D", border: "1.5px solid rgba(199,147,45,0.30)" }}
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                                Modifier
+                            </button>
+                            <button
+                                onClick={() => logoutMutation.mutate()}
+                                className="flex items-center gap-2 h-9 px-4 rounded-full text-[12px] font-medium transition-all hover:opacity-75"
+                                style={{ border: "1.5px solid rgba(81,49,2,0.12)", color: "rgba(81,49,2,0.55)", background: "transparent" }}
+                            >
+                                <LogOut className="w-3.5 h-3.5" />
+                                Déconnexion
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Formulaire d'édition inline */}
+                    {editing && (
+                        <div className="mt-5 pt-5 space-y-3" style={{ borderTop: "1px solid rgba(81,49,2,0.08)" }}>
+                            <div className="flex items-center justify-between">
+                                <p style={{ fontSize: 13, fontWeight: 700, color: "#513102" }}>Modifier mon profil</p>
+                                <button onClick={() => setEditing(false)} style={{ color: "rgba(81,49,2,0.45)", cursor: "pointer" }}><X className="w-4 h-4" /></button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(81,49,2,0.55)", display: "block", marginBottom: 5 }}>Nom complet</label>
+                                    <input value={nom} onChange={(e) => setNom(e.target.value)} className="wurus-input" placeholder="Votre nom" />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(81,49,2,0.55)", display: "block", marginBottom: 5 }}>Téléphone</label>
+                                    <input value={telephone} onChange={(e) => setTelephone(e.target.value)} className="wurus-input" placeholder="+221 77 000 00 00" />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 pt-1">
+                                <button onClick={saveProfile} disabled={updateProfile.isPending}
+                                    className="flex items-center justify-center gap-2 h-11 px-5 rounded-full font-bold disabled:opacity-50"
+                                    style={{ background: "#C7932D", color: "white", fontSize: 14, cursor: "pointer" }}>
+                                    {updateProfile.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    Enregistrer
+                                </button>
+                                <button onClick={() => setEditing(false)}
+                                    className="h-11 px-5 rounded-full font-medium"
+                                    style={{ border: "1.5px solid rgba(81,49,2,0.15)", color: "rgba(81,49,2,0.60)", fontSize: 14, cursor: "pointer", background: "transparent" }}>
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* ── Orders section ───────────────────────────────────────────────── */}

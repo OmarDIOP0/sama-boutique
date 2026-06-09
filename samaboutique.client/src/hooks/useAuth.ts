@@ -74,3 +74,17 @@ export function useChangePassword() {
     mutationFn: (data: ChangePasswordRequest) => authApi.changePassword(data),
   });
 }
+
+export function useUpdateProfile() {
+  const { setUser, user } = useAuthStore();
+  return useMutation({
+    mutationFn: async (data: { nom: string; telephone?: string; email?: string }) => {
+      const res = await authApi.updateProfile(data);
+      return res.data.data;
+    },
+    onSuccess: (updated) => {
+      // fusionne avec le user existant (garde token/role) et met à jour le store
+      if (user) setUser({ ...user, ...updated });
+    },
+  });
+}

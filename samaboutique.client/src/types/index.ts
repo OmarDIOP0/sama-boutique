@@ -34,6 +34,7 @@ export interface User {
   nom: string;
   email: string;
   role: string;
+  telephone?: string;
   permissions?: string[];
 }
 
@@ -417,4 +418,32 @@ export interface OfflineQueueItem {
   payload: SaleCreateRequest;
   createdAt: string;
   retries: number;
+}
+
+// ─── Delivery Zones ───────────────────────────────────────────────────────────
+export interface DeliveryZone {
+  id: string;
+  nom: string;
+  region?: string;
+  communes: string[];
+  tarif: number;
+  delaiMinH: number;
+  delaiMaxH: number;
+  isActive: boolean;
+  description?: string;
+  freeFrom?: number | null;
+  ordre: number;
+}
+
+export interface DeliveryZoneRequest {
+  nom: string;
+  region?: string;
+  communes: string[];
+  tarif: number;
+  delaiMinH: number;
+  delaiMaxH: number;
+  isActive: boolean;
+  description?: string;
+  freeFrom?: number | null;
+  ordre: number;
 }

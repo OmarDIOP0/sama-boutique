@@ -10,5 +10,6 @@ namespace SamaBoutique.Server.Services.Interface
         Task<(bool Ok, string? Error)> ChangePasswordAsync(Guid userId, ChangePasswordRequest req);
         Task<bool> RevokeTokenAsync(Guid userId, string ip);
         Task<UserInfoDto?> GetMeAsync(Guid userId);
+        Task<(UserInfoDto? User, string? Error)> UpdateProfileAsync(Guid userId, UpdateProfileRequest req);
     }
 }

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/validators";
 import { useChangePassword } from "@/hooks/useAuth";
-import { useUIStore } from "@/stores/ui.store";
+import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/stores/auth.store";
 import { useSettingsStore } from "@/stores/settings.store";
 import { AdminPageHeader } from "@/components/admin/ui";
@@ -81,7 +81,7 @@ const labelStyle: React.CSSProperties = { display: "block", fontSize: 14, fontWe
 
 export default function Settings() {
   const { user } = useAuthStore();
-  const { theme, toggleTheme } = useUIStore();
+  const { theme, toggleTheme } = useTheme();
   const [active, setActive] = useState<typeof SECTIONS[number]["id"]>("profil");
   const changePasswordMutation = useChangePassword();
 
