@@ -27,6 +27,7 @@ namespace SamaBoutique.Server.Data
         public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
         public DbSet<DeliveryZone> DeliveryZones => Set<DeliveryZone>();
+        public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
         protected override void OnModelCreating(ModelBuilder mb)
         {
             base.OnModelCreating(mb);
@@ -220,6 +221,18 @@ namespace SamaBoutique.Server.Data
                 e.Property(d => d.Nom).IsRequired().HasMaxLength(150);
                 e.Property(d => d.Tarif).HasColumnType("decimal(18,2)");
                 e.Property(d => d.FreeFrom).HasColumnType("decimal(18,2)");
+            });
+
+            // ── PushSubscription ──────────────────────────────
+            mb.Entity<PushSubscription>(e =>
+            {
+                e.HasKey(p => p.Id);
+                e.Property(p => p.Endpoint).IsRequired();
+                e.HasIndex(p => p.Endpoint).IsUnique();
+                e.HasOne(p => p.User)
+                 .WithMany()
+                 .HasForeignKey(p => p.UserId)
+                 .OnDelete(DeleteBehavior.Cascade);
             });
 
             SeedData(mb);

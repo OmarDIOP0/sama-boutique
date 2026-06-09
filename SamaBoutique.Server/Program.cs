@@ -125,6 +125,8 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<SamaBoutique.Server.Services.IDeliveryService, SamaBoutique.Server.Services.DeliveryService>();
+builder.Services.AddSingleton<SamaBoutique.Server.Services.IVapidProvider, SamaBoutique.Server.Services.VapidProvider>();
+builder.Services.AddScoped<SamaBoutique.Server.Services.IPushService, SamaBoutique.Server.Services.PushService>();
 
 // ── Controllers ───────────────────────────────────────────
 builder.Services.AddControllers()

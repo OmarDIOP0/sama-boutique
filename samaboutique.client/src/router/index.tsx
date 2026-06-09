@@ -25,6 +25,7 @@ const Orders = lazy(() => import("@/pages/admin/Orders"));
 const Analytics = lazy(() => import("@/pages/admin/Analytics"));
 const Categories = lazy(() => import("@/pages/admin/Categories"));
 const Settings = lazy(() => import("@/pages/admin/Settings"));
+const Notifications = lazy(() => import("@/pages/admin/Notifications"));
 
 // ── Client pages ──────────────────────────────────────────────────────────────
 const Home = lazy(() => import("@/pages/client/Home"));
@@ -71,6 +72,7 @@ export const router = createBrowserRouter([
           { path: "orders", element: <PageSuspense><Orders /></PageSuspense> },
           { path: "analytics", element: <PageSuspense><Analytics /></PageSuspense> },
           { path: "settings", element: <PageSuspense><Settings /></PageSuspense> },
+          { path: "notifications", element: <PageSuspense><Notifications /></PageSuspense> },
         ],
       },
     ],

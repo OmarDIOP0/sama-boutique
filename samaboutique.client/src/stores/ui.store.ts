@@ -26,17 +26,21 @@ interface UIState {
   isOnline: boolean;
   offlineQueueCount: number;
   lastSeenSaleId: string | null;   // suivi du dernier paiement notifié
+  lastSeenOrderId: string | null;  // suivi de la dernière commande notifiée
 
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
   toggleTheme: () => void;
   setTheme: (theme: "light" | "dark") => void;
   addNotification: (n: Omit<Notification, "id" | "createdAt" | "read">) => void;
+  markRead: (id: string) => void;
   markAllRead: () => void;
+  removeNotification: (id: string) => void;
   clearNotifications: () => void;
   setOnlineStatus: (online: boolean) => void;
   setOfflineQueueCount: (count: number) => void;
   setLastSeenSaleId: (id: string | null) => void;
+  setLastSeenOrderId: (id: string | null) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -48,6 +52,7 @@ export const useUIStore = create<UIState>()(
       isOnline: true,
       offlineQueueCount: 0,
       lastSeenSaleId: null,
+      lastSeenOrderId: null,
 
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
@@ -75,16 +80,25 @@ export const useUIStore = create<UIState>()(
         }));
       },
 
+      markRead: (id) =>
+        set((s) => ({
+          notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+        })),
+
       markAllRead: () =>
         set((s) => ({
           notifications: s.notifications.map((n) => ({ ...n, read: true })),
         })),
+
+      removeNotification: (id) =>
+        set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) })),
 
       clearNotifications: () => set({ notifications: [] }),
 
       setOnlineStatus: (isOnline) => set({ isOnline }),
       setOfflineQueueCount: (count) => set({ offlineQueueCount: count }),
       setLastSeenSaleId: (id) => set({ lastSeenSaleId: id }),
+      setLastSeenOrderId: (id) => set({ lastSeenOrderId: id }),
     }),
     {
       name: "ui-store",
@@ -93,6 +107,7 @@ export const useUIStore = create<UIState>()(
         sidebarOpen: state.sidebarOpen,
         notifications: state.notifications.slice(0, 50),  // persister les paiements
         lastSeenSaleId: state.lastSeenSaleId,
+        lastSeenOrderId: state.lastSeenOrderId,
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.theme) {

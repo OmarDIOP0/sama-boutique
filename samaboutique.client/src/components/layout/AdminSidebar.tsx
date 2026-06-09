@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Package, Tag, Boxes, ShoppingCart, TrendingUp,
   Users, ClipboardList, BarChart3, Settings, LogOut, ChevronLeft,
-  AlertTriangle, ExternalLink,
+  AlertTriangle, ExternalLink, Bell,
 } from "lucide-react";
 import { cn, getInitials, roleLabel } from "@/lib/utils";
 import { AdminIcon, type AdminIconColor } from "@/components/admin/ui";
@@ -21,6 +21,7 @@ const navItems: { to: string; icon: React.ElementType; label: string; color: Adm
   { to: "/admin/clients", icon: Users, label: "Clients", color: "purple" },
   { to: "/admin/orders", icon: ClipboardList, label: "Commandes", color: "blue" },
   { to: "/admin/analytics", icon: BarChart3, label: "Analytiques", color: "blue" },
+  { to: "/admin/notifications", icon: Bell, label: "Notifications", color: "amber" },
   { to: "/admin/settings", icon: Settings, label: "Paramètres", color: "brown" },
 ];
 
@@ -30,12 +31,13 @@ const CREAM = "#FFF8EE";
 
 export function AdminSidebar() {
   const { user } = useAuthStore();
-  const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { sidebarOpen, toggleSidebar, notifications } = useUIStore();
   const { data: alerts = [] } = useStockAlerts();
   const logoutMutation = useLogout();
   const navigate = useNavigate();
 
   const stockAlertCount = alerts.length;
+  const unreadNotifs = notifications.filter((n) => !n.read).length;
 
   return (
     <>
@@ -112,6 +114,15 @@ export function AdminSidebar() {
                           sidebarOpen ? "ml-auto px-1.5 min-w-[18px] h-[18px] text-[11px]" : "absolute top-1 right-1 w-4 h-4 text-[9px]"
                         )} style={{ background: GOLD }} title={`${stockAlertCount} produit(s) en stock bas`}>
                           {stockAlertCount}
+                        </span>
+                      )}
+                      {/* Badge non-lus sur Notifications */}
+                      {label === "Notifications" && unreadNotifs > 0 && (
+                        <span className={cn(
+                          "flex-shrink-0 text-white rounded-full font-bold flex items-center justify-center",
+                          sidebarOpen ? "ml-auto px-1.5 min-w-[18px] h-[18px] text-[11px]" : "absolute top-1 right-1 w-4 h-4 text-[9px]"
+                        )} style={{ background: "#DC2626" }} title={`${unreadNotifs} notification(s) non lue(s)`}>
+                          {unreadNotifs > 9 ? "9+" : unreadNotifs}
                         </span>
                       )}
                       {/* Tooltip collapsed */}

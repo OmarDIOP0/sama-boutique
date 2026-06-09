@@ -12,16 +12,21 @@ namespace SamaBoutique.Server.Services
         private readonly IClientRepository _clientRepo;
         private readonly IStockRepository _stockRepo;
         private readonly ISaleRepository _saleRepo;
+        private readonly IPushService _push;
+        private readonly ILogger<OrderService> _logger;
         private static readonly HashSet<string> ValidStatuts = new() { "EnAttente", "Confirmee", "EnPreparation", "Expediee", "Livree", "Annulee", "Retournee" };
         // Compte système (SuperAdmin seedé) utilisé comme "enregistreur" des ventes en ligne
         private static readonly Guid SystemUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
-        public OrderService(IOrderRepository repo, IClientRepository clientRepo, IStockRepository stockRepo, ISaleRepository saleRepo)
+        public OrderService(IOrderRepository repo, IClientRepository clientRepo, IStockRepository stockRepo,
+            ISaleRepository saleRepo, IPushService push, ILogger<OrderService> logger)
         {
             _repo = repo;
             _clientRepo = clientRepo;
             _stockRepo = stockRepo;
             _saleRepo = saleRepo;
+            _push = push;
+            _logger = logger;
         }
 
         public async Task<PagedResponse<OrderResponse>> GetAllAsync(int page, int pageSize, string? statut, Guid? clientId)
@@ -139,6 +144,10 @@ namespace SamaBoutique.Server.Services
             }
 
             await _repo.SaveChangesAsync();
+
+            // ── Notifications push (best-effort, ne bloque jamais la commande) ────
+            await NotifyNewOrderAsync(order, req.Items, variantCache);
+
             return (await GetByIdAsync(order.Id), null);
         }
 
@@ -155,7 +164,67 @@ namespace SamaBoutique.Server.Services
 
             await _repo.UpdateAsync(order);
             await _repo.SaveChangesAsync();
+
+            // ── Notifier le client du changement de statut ───────────────────────
+            await NotifyStatusChangeAsync(order);
+
             return (await GetByIdAsync(id), null);
+        }
+
+        // ── Déclencheurs push ────────────────────────────────────────────────────
+        private async Task NotifyNewOrderAsync(Order order, IEnumerable<OrderItemRequest> items, Dictionary<Guid, ProductVariant> variantCache)
+        {
+            try
+            {
+                var client = await _clientRepo.GetByIdAsync(order.ClientId);
+                var nom = client?.Nom ?? "Client";
+                await _push.SendToAdminsAsync(
+                    "🛍️ Nouvelle commande",
+                    $"{nom} · {order.TotalTTC:N0} FCFA",
+                    "orders", "/admin/orders");
+
+                // Alerte stock bas suite à la commande
+                foreach (var item in items)
+                {
+                    if (variantCache.TryGetValue(item.VariantId, out var v) && v.IsStockCritical())
+                    {
+                        var label = v.Product?.Nom ?? "Produit";
+                        var variante = v.GetLabel();
+                        await _push.SendToAdminsAsync(
+                            v.IsRupture() ? "⛔ Rupture de stock" : "⚠️ Stock bas",
+                            $"{label}{(string.IsNullOrWhiteSpace(variante) ? "" : $" ({variante})")} — {v.StockActuel} restant",
+                            "stock", "/admin/stock");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Échec notification push nouvelle commande {OrderId}", order.Id);
+            }
+        }
+
+        private async Task NotifyStatusChangeAsync(Order order)
+        {
+            try
+            {
+                var (title, body) = order.Statut switch
+                {
+                    "Confirmee" => ("✅ Commande confirmée", "Votre commande a été confirmée."),
+                    "EnPreparation" => ("📦 Commande en préparation", "Nous préparons votre commande."),
+                    "Expediee" => ("🚚 Commande expédiée", "Votre commande est en route !"),
+                    "Livree" => ("🎉 Commande livrée", "Votre commande a été livrée. Merci !"),
+                    "Annulee" => ("❌ Commande annulée", "Votre commande a été annulée."),
+                    "Retournee" => ("↩️ Commande retournée", "Votre retour a été enregistré."),
+                    _ => ("", ""),
+                };
+                if (title.Length == 0) return;
+
+                await _push.SendToUserAsync(order.ClientId, title, body, "orders", $"/commande/suivi/{order.Id}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Échec notification push statut commande {OrderId}", order.Id);
+            }
         }
 
         private static OrderResponse Map(Order o) => new(

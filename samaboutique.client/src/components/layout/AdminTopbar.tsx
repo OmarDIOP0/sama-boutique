@@ -1,24 +1,13 @@
-import { Menu, Bell, Sun, Moon, WifiOff, Banknote, Trash2, ChevronDown, User, Lock, Store, LogOut } from "lucide-react";
+import { Menu, Bell, Sun, Moon, WifiOff, Trash2, ChevronDown, User, Lock, Store, LogOut, ArrowRight } from "lucide-react";
 import { useUIStore } from "@/stores/ui.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { useTheme } from "@/hooks/useTheme";
 import { useLogout } from "@/hooks/useAuth";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { cn, getInitials, formatPrice, roleLabel } from "@/lib/utils";
+import { notifVisual, relativeTime } from "@/lib/notifications";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-
-// Temps relatif court (il y a 5 min, 2 h, etc.)
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "à l'instant";
-  if (m < 60) return `il y a ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `il y a ${h} h`;
-  const d = Math.floor(h / 24);
-  return `il y a ${d} j`;
-}
 
 // Titre de page selon la route
 const PAGE_TITLES: { match: (p: string) => boolean; title: string }[] = [
@@ -32,6 +21,7 @@ const PAGE_TITLES: { match: (p: string) => boolean; title: string }[] = [
   { match: (p) => p.startsWith("/admin/orders"), title: "Commandes" },
   { match: (p) => p.startsWith("/admin/analytics"), title: "Analytiques" },
   { match: (p) => p.startsWith("/admin/settings"), title: "Paramètres" },
+  { match: (p) => p.startsWith("/admin/notifications"), title: "Notifications" },
 ];
 
 const DARK = "#513102";
@@ -148,28 +138,27 @@ export function AdminTopbar() {
                     <p style={{ fontSize: 13, color: "rgba(81,49,2,0.45)" }}>Aucune notification</p>
                   </div>
                 ) : (
-                  notifications.slice(0, 20).map((n) => {
-                    const isPayment = n.type === "payment";
+                  notifications.slice(0, 12).map((n) => {
+                    const v = notifVisual(n.type);
                     return (
-                      <div key={n.id} className="px-4 py-3 flex items-start gap-3 last:border-0"
-                        style={{ borderBottom: "1px solid rgba(81,49,2,0.05)", background: !n.read ? "rgba(199,147,45,0.05)" : "transparent" }}>
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                          style={{ background: isPayment ? "rgba(45,122,79,0.12)" : "rgba(199,147,45,0.10)" }}>
-                          {isPayment
-                            ? <Banknote className="w-4 h-4" style={{ color: "#2D7A4F" }} />
-                            : <Bell className="w-4 h-4" style={{ color: GOLD }} />}
+                      <div key={n.id}
+                        onClick={() => {
+                          useUIStore.getState().markRead(n.id);
+                          if (n.link) { setShowNotifications(false); navigate(n.link); }
+                        }}
+                        className="px-4 py-3 flex items-start gap-3 last:border-0 transition-colors hover:bg-[rgba(199,147,45,0.06)]"
+                        style={{ borderBottom: "1px solid rgba(81,49,2,0.05)", background: !n.read ? "rgba(199,147,45,0.05)" : "transparent", cursor: n.link ? "pointer" : "default" }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: v.bg }}>
+                          <v.Icon className="w-4 h-4" style={{ color: v.color }} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          {isPayment && n.amount != null ? (
-                            <>
-                              <p style={{ fontSize: 14, fontWeight: 700, color: "#2D7A4F" }}>{formatPrice(n.amount)}</p>
-                              <p style={{ fontSize: 12, color: "rgba(81,49,2,0.55)" }}>
-                                {n.message.replace(/^Paiement reçu — [^·]*/, "Paiement reçu")}
-                              </p>
-                            </>
-                          ) : (
-                            <p style={{ fontSize: 13, fontWeight: 500, color: DARK }}>{n.message}</p>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {n.title && <p style={{ fontSize: 13.5, fontWeight: 700, color: DARK }}>{n.title}</p>}
+                            {n.type === "payment" && n.amount != null && (
+                              <span style={{ fontSize: 12.5, fontWeight: 700, color: v.color }}>{formatPrice(n.amount)}</span>
+                            )}
+                          </div>
+                          <p className="truncate" style={{ fontSize: 12.5, color: "rgba(81,49,2,0.60)" }}>{n.message}</p>
                           <p style={{ fontSize: 11, color: "rgba(81,49,2,0.40)", marginTop: 2 }}>{relativeTime(n.createdAt)}</p>
                         </div>
                         {!n.read && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: GOLD }} />}
@@ -178,6 +167,17 @@ export function AdminTopbar() {
                   })
                 )}
               </div>
+
+              {/* Pied : voir tout */}
+              <button
+                onClick={() => { setShowNotifications(false); navigate("/admin/notifications"); }}
+                className="w-full flex items-center justify-center gap-1.5 py-3 transition-colors"
+                style={{ borderTop: "1px solid rgba(81,49,2,0.08)", fontSize: 13, fontWeight: 600, color: GOLD, cursor: "pointer" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(199,147,45,0.06)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+              >
+                Voir toutes les notifications <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </>
         )}
@@ -220,7 +220,7 @@ export function AdminTopbar() {
             <div className="py-1.5">
               {[
                 { icon: User, label: "Mon profil", action: () => navigate("/admin/settings") },
-                { icon: Bell, label: "Préférences notifs", action: () => navigate("/admin/settings") },
+                { icon: Bell, label: "Notifications", action: () => navigate("/admin/notifications") },
                 { icon: Lock, label: "Changer mot de passe", action: () => navigate("/admin/settings") },
               ].map(({ icon: Icon, label, action }) => (
                 <button key={label} onClick={() => { setShowProfile(false); action(); }}

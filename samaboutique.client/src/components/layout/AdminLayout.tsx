@@ -6,13 +6,13 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { getOfflineQueue } from "@/lib/offline-queue";
-import { usePaymentNotifications } from "@/hooks/usePaymentNotifications";
+import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 
 export function AdminLayout() {
   const { sidebarOpen, setOnlineStatus, setOfflineQueueCount } = useUIStore();
 
-  // Notifications de paiement en temps réel (cloche + toast)
-  usePaymentNotifications(true);
+  // Centre de notifications temps réel : paiements, commandes, stock (cloche + toast)
+  useAdminNotifications(true);
 
   // Track online/offline status
   useEffect(() => {
