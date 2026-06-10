@@ -6,6 +6,9 @@ import type {
   LoginRequest,
   RegisterRequest,
   ChangePasswordRequest,
+  SendOtpResponse,
+  VerifyOtpResponse,
+  RegisterOtpRequest,
 } from "@/types";
 
 /** Shape of the login/register data payload returned by the backend */
@@ -19,6 +22,16 @@ export const authApi = {
 
   register: (data: RegisterRequest) =>
     api.post<ApiResponse<LoginPayload>>("/api/auth/register", data),
+
+  // ── OTP (flow Jumia) ──
+  sendOtp: (contact: string) =>
+    api.post<ApiResponse<SendOtpResponse>>("/api/auth/send-otp", { contact }),
+  resendOtp: (contact: string) =>
+    api.post<ApiResponse<SendOtpResponse>>("/api/auth/resend-otp", { contact }),
+  verifyOtp: (contact: string, otp: string) =>
+    api.post<ApiResponse<VerifyOtpResponse>>("/api/auth/verify-otp", { contact, otp }),
+  registerOtp: (data: RegisterOtpRequest) =>
+    api.post<ApiResponse<LoginPayload>>("/api/auth/register-otp", data),
 
   logout: () => api.post("/api/auth/logout"),
 

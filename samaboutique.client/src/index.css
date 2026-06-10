@@ -618,6 +618,16 @@ code, pre, kbd,
 }
 .admin-btn-danger:hover { background: #b91c1c; transform: translateY(-1px); }
 
+/* ── Auth (wizards Register/Login) ── */
+@keyframes authInRight { from { opacity:0; transform: translateX(32px);} to {opacity:1; transform:translateX(0);} }
+@keyframes authInLeft  { from { opacity:0; transform: translateX(-32px);} to {opacity:1; transform:translateX(0);} }
+@keyframes authPop { 0%{opacity:0; transform:scale(0.5);} 60%{transform:scale(1.12);} 100%{opacity:1; transform:scale(1);} }
+@keyframes authShake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-7px);} 40%,80%{transform:translateX(7px);} }
+.auth-in-right { animation: authInRight .28s ease-out; }
+.auth-in-left  { animation: authInLeft .28s ease-out; }
+.auth-pop { animation: authPop .5s cubic-bezier(0.16,1,0.3,1); }
+.auth-shake { animation: authShake .4s ease; }
+
 /* ── PWA (splash, bannières) ── */
 @keyframes pwaSlideUp {
     from { opacity: 0; transform: translate(-50%, 20px); }

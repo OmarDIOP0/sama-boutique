@@ -21,6 +21,13 @@
 
     public record RefreshTokenRequest(string RefreshToken);
 
+    // ── OTP (inscription style Jumia) ──────────────────────────────────────
+    public record SendOtpRequest(string Contact);
+    public record SendOtpResponse(string Channel, string? DevCode);
+    public record VerifyOtpRequest(string Contact, string Otp);
+    public record VerifyOtpResponse(string VerifyToken);
+    public record RegisterOtpRequest(string Nom, string Password, string VerifyToken);
+
     public record ChangePasswordRequest(
         string CurrentPassword,
         string NewPassword,

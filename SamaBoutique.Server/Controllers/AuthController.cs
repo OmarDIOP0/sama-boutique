@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SamaBoutique.Server.Models.DTOs;
+using SamaBoutique.Server.Services;
 using SamaBoutique.Server.Services.Interface;
 
 namespace SamaBoutique.Server.Controllers
@@ -11,7 +12,12 @@ namespace SamaBoutique.Server.Controllers
     public class AuthController : BaseController
     {
         private readonly IAuthService _auth;
-        public AuthController(IAuthService auth) => _auth = auth;
+        private readonly IOtpService _otp;
+        public AuthController(IAuthService auth, IOtpService otp)
+        {
+            _auth = auth;
+            _otp = otp;
+        }
 
         /// <summary>Connexion - retourne un JWT + refresh token</summary>
         [HttpPost("login")]
@@ -29,6 +35,46 @@ namespace SamaBoutique.Server.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterClientRequest req)
         {
             var (resp, error) = await _auth.RegisterClientAsync(req);
+            if (error != null) return ApiFail(error);
+            return ApiOk(resp!, "Compte créé avec succès");
+        }
+
+        /// <summary>Envoi d'un code OTP (SMS si téléphone, email sinon)</summary>
+        [HttpPost("send-otp")]
+        [EnableRateLimiting("auth")]
+        public IActionResult SendOtp([FromBody] SendOtpRequest req)
+        {
+            var (ok, error, channel, devCode) = _otp.Send(req.Contact);
+            if (!ok) return ApiFail(error!);
+            return ApiOk(new SendOtpResponse(channel, devCode), "Code envoyé");
+        }
+
+        /// <summary>Renvoi d'un code OTP</summary>
+        [HttpPost("resend-otp")]
+        [EnableRateLimiting("auth")]
+        public IActionResult ResendOtp([FromBody] SendOtpRequest req)
+        {
+            var (ok, error, channel, devCode) = _otp.Send(req.Contact);
+            if (!ok) return ApiFail(error!);
+            return ApiOk(new SendOtpResponse(channel, devCode), "Nouveau code envoyé");
+        }
+
+        /// <summary>Vérification de l'OTP : retourne un verifyToken (10 min)</summary>
+        [HttpPost("verify-otp")]
+        [EnableRateLimiting("auth")]
+        public IActionResult VerifyOtp([FromBody] VerifyOtpRequest req)
+        {
+            var (ok, error, verifyToken) = _otp.Verify(req.Contact, req.Otp);
+            if (!ok) return ApiFail(error!);
+            return ApiOk(new VerifyOtpResponse(verifyToken!), "Code vérifié");
+        }
+
+        /// <summary>Finalisation de l'inscription après vérification OTP</summary>
+        [HttpPost("register-otp")]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> RegisterOtp([FromBody] RegisterOtpRequest req)
+        {
+            var (resp, error) = await _auth.RegisterWithOtpAsync(req);
             if (error != null) return ApiFail(error);
             return ApiOk(resp!, "Compte créé avec succès");
         }

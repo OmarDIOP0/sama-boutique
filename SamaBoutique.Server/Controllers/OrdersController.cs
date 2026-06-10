@@ -13,17 +13,30 @@ namespace SamaBoutique.Server.Controllers
         private readonly IOrderService _svc;
         public OrdersController(IOrderService svc) => _svc = svc;
 
+        // Un client ne voit QUE ses propres commandes ; le staff voit tout.
+        private bool IsStaff =>
+            User.IsInRole("SuperAdmin") || User.IsInRole("Admin") ||
+            User.IsInRole("Caissier") || User.IsInRole("Vendeur");
+
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] int page = 1, [FromQuery] int pageSize = 20,
             [FromQuery] string? statut = null, [FromQuery] Guid? clientId = null)
-            => ApiPaged(await _svc.GetAllAsync(page, pageSize, statut, clientId));
+        {
+            // Pour un client, on force le filtre sur son propre identifiant
+            // (Client.Id == User.Id) afin qu'il ne voie pas les commandes des autres.
+            var effectiveClientId = IsStaff ? clientId : CurrentUserId;
+            return ApiPaged(await _svc.GetAllAsync(page, pageSize, statut, effectiveClientId));
+        }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var o = await _svc.GetByIdAsync(id);
-            return o == null ? ApiNotFound("Commande introuvable") : ApiOk(o);
+            if (o == null) return ApiNotFound("Commande introuvable");
+            // Un client ne peut consulter que ses propres commandes
+            if (!IsStaff && o.ClientId != CurrentUserId) return ApiNotFound("Commande introuvable");
+            return ApiOk(o);
         }
 
         [HttpPost]

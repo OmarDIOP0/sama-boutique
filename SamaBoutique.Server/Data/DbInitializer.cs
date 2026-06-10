@@ -68,6 +68,33 @@ namespace SamaBoutique.Server.Data
                 await db.SaveChangesAsync();
             }
 
+            // ── Backfill : fiches Client manquantes ──────────────────────────────
+            // Les comptes clients enregistrés avant la correction n'avaient pas de
+            // fiche Client (Id = User.Id) : ils étaient invisibles côté admin et ne
+            // pouvaient pas commander. On les recrée ici.
+            {
+                var clientRoleId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+                var existingClientIds = (await db.Clients.Select(c => c.Id).ToListAsync()).ToHashSet();
+                var clientUsers = await db.Users.Where(u => u.RoleId == clientRoleId).ToListAsync();
+                var missing = clientUsers.Where(u => !existingClientIds.Contains(u.Id)).ToList();
+                if (missing.Count > 0)
+                {
+                    foreach (var u in missing)
+                    {
+                        db.Clients.Add(new Client
+                        {
+                            Id = u.Id,
+                            Nom = u.Nom,
+                            Email = u.Email,
+                            Telephone = string.IsNullOrWhiteSpace(u.Telephone) ? null : u.Telephone,
+                            Segment = "Nouveau",
+                            CreatedAt = u.CreatedAt,
+                        });
+                    }
+                    await db.SaveChangesAsync();
+                }
+            }
+
             // ── Seed : zones de livraison (vraies données sénégalaises) ──────────
             if (!await db.DeliveryZones.AnyAsync())
             {

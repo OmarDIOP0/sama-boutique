@@ -58,6 +58,20 @@ export interface RegisterRequest {
   dateNaissance?: string;
 }
 
+// ─── OTP (inscription style Jumia) ───────────────────────────────────────────
+export interface SendOtpResponse {
+  channel: "sms" | "email";
+  devCode?: string | null;
+}
+export interface VerifyOtpResponse {
+  verifyToken: string;
+}
+export interface RegisterOtpRequest {
+  nom: string;
+  password: string;
+  verifyToken: string;
+}
+
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;

@@ -15,14 +15,18 @@ namespace SamaBoutique.Server.Services
     {
         private readonly IUserRepository _userRepo;
         private readonly IRefreshTokenRepository _tokenRepo;
+        private readonly IClientRepository _clientRepo;
+        private readonly IOtpService _otp;
         private readonly IConfiguration _config;
         private const int MaxFailedAttempts = 5;
         private const int LockMinutes = 15;
 
-        public AuthService(IUserRepository userRepo, IRefreshTokenRepository tokenRepo, IConfiguration config)
+        public AuthService(IUserRepository userRepo, IRefreshTokenRepository tokenRepo, IClientRepository clientRepo, IOtpService otp, IConfiguration config)
         {
             _userRepo = userRepo;
             _tokenRepo = tokenRepo;
+            _clientRepo = clientRepo;
+            _otp = otp;
             _config = config;
         }
         public async Task<(LoginResponse?, string?)> LoginAsync(LoginRequest req, string ip)
@@ -91,6 +95,9 @@ namespace SamaBoutique.Server.Services
             if (await _userRepo.EmailExistsAsync(req.Email))
                 return (null, "Cette adresse email est déjà utilisée");
 
+            // Téléphone normalisé (sans espaces) pour permettre la connexion par numéro
+            var phone = req.Telephone?.Replace(" ", "").Trim();
+
             // Récupérer le rôle Client (id fixe du seed)
             var clientRoleId = Guid.Parse("55555555-5555-5555-5555-555555555555");
 
@@ -98,6 +105,7 @@ namespace SamaBoutique.Server.Services
             {
                 Nom = req.Nom,
                 Email = req.Email.ToLower(),
+                Telephone = phone ?? string.Empty,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
                 RoleId = clientRoleId
             };
@@ -105,11 +113,86 @@ namespace SamaBoutique.Server.Services
             await _userRepo.AddAsync(user);
             await _userRepo.SaveChangesAsync();
 
+            // Créer l'entité Client liée (Id = User.Id) afin qu'il apparaisse côté
+            // admin et puisse passer des commandes (OrderService vérifie l'existence).
+            await _clientRepo.AddAsync(new Client
+            {
+                Id = user.Id,
+                Nom = req.Nom,
+                Email = user.Email,
+                Telephone = phone,
+                Adresse = req.Adresse,
+                Segment = "Nouveau",
+            });
+            await _clientRepo.SaveChangesAsync();
+
             // Recharger avec le rôle
             var fullUser = await _userRepo.GetWithRoleAsync(user.Id);
             var (accessToken, expiry) = GenerateAccessToken(fullUser!);
             var refreshToken = await CreateRefreshTokenAsync(user.Id, "register");
 
+            return (BuildLoginResponse(fullUser!, accessToken, expiry, refreshToken.Token), null);
+        }
+
+        /// <summary>Inscription après vérification OTP (flow style Jumia).</summary>
+        public async Task<(LoginResponse?, string?)> RegisterWithOtpAsync(RegisterOtpRequest req)
+        {
+            var validated = _otp.ValidateVerifyToken(req.VerifyToken);
+            if (validated is null)
+                return (null, "Vérification expirée. Veuillez recommencer l'inscription.");
+
+            var (contact, channel) = validated.Value;
+
+            if (string.IsNullOrWhiteSpace(req.Nom) || req.Nom.Trim().Length < 2)
+                return (null, "Le nom doit contenir au moins 2 caractères");
+            if (string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 8)
+                return (null, "Le mot de passe doit contenir au moins 8 caractères");
+
+            // Déterminer email / téléphone selon le canal vérifié
+            string email;
+            string? phone;
+            if (channel == "email")
+            {
+                email = contact.ToLowerInvariant();
+                phone = null;
+            }
+            else
+            {
+                phone = contact; // déjà normalisé +221XXXXXXXXX
+                var digits = new string(contact.Where(char.IsDigit).ToArray());
+                email = $"{digits}@phone.samaboutique.sn";
+            }
+
+            if (await _userRepo.EmailExistsAsync(email))
+                return (null, "Un compte existe déjà pour ce contact");
+            if (phone != null && await _userRepo.GetByTelephoneAsync(phone) != null)
+                return (null, "Un compte existe déjà pour ce numéro");
+
+            var clientRoleId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var user = new User
+            {
+                Nom = req.Nom.Trim(),
+                Email = email,
+                Telephone = phone ?? string.Empty,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
+                RoleId = clientRoleId
+            };
+            await _userRepo.AddAsync(user);
+            await _userRepo.SaveChangesAsync();
+
+            await _clientRepo.AddAsync(new Client
+            {
+                Id = user.Id,
+                Nom = user.Nom,
+                Email = email,
+                Telephone = phone,
+                Segment = "Nouveau",
+            });
+            await _clientRepo.SaveChangesAsync();
+
+            var fullUser = await _userRepo.GetWithRoleAsync(user.Id);
+            var (accessToken, expiry) = GenerateAccessToken(fullUser!);
+            var refreshToken = await CreateRefreshTokenAsync(user.Id, "register-otp");
             return (BuildLoginResponse(fullUser!, accessToken, expiry, refreshToken.Token), null);
         }
 

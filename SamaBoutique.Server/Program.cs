@@ -117,6 +117,7 @@ builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 
 // ── Services ──────────────────────────────────────────────
+builder.Services.AddSingleton<SamaBoutique.Server.Services.IOtpService, SamaBoutique.Server.Services.OtpService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IStockService, StockService>();
