@@ -32,6 +32,8 @@ export const authApi = {
     api.post<ApiResponse<VerifyOtpResponse>>("/api/auth/verify-otp", { contact, otp }),
   registerOtp: (data: RegisterOtpRequest) =>
     api.post<ApiResponse<LoginPayload>>("/api/auth/register-otp", data),
+  resetPasswordOtp: (data: { verifyToken: string; newPassword: string }) =>
+    api.post<ApiResponse<null>>("/api/auth/reset-password-otp", data),
 
   logout: () => api.post("/api/auth/logout"),
 

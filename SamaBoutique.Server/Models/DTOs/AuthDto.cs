@@ -27,6 +27,7 @@
     public record VerifyOtpRequest(string Contact, string Otp);
     public record VerifyOtpResponse(string VerifyToken);
     public record RegisterOtpRequest(string Nom, string Password, string VerifyToken);
+    public record ResetPasswordOtpRequest(string VerifyToken, string NewPassword);
 
     public record ChangePasswordRequest(
         string CurrentPassword,

@@ -196,6 +196,34 @@ namespace SamaBoutique.Server.Services
             return (BuildLoginResponse(fullUser!, accessToken, expiry, refreshToken.Token), null);
         }
 
+        /// <summary>Réinitialisation du mot de passe après vérification OTP.</summary>
+        public async Task<(bool, string?)> ResetPasswordWithOtpAsync(ResetPasswordOtpRequest req)
+        {
+            var validated = _otp.ValidateVerifyToken(req.VerifyToken);
+            if (validated is null)
+                return (false, "Vérification expirée. Veuillez recommencer.");
+            if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 8)
+                return (false, "Le mot de passe doit contenir au moins 8 caractères");
+
+            var (contact, channel) = validated.Value;
+            var user = channel == "email"
+                ? await _userRepo.GetByEmailAsync(contact)
+                : await _userRepo.GetByTelephoneAsync(contact);
+
+            if (user == null)
+                return (false, "Aucun compte n'est associé à ce contact");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+            user.FailedLoginAttempts = 0;
+            user.LockedUntil = null;
+            await _userRepo.SaveChangesAsync();
+
+            // Invalider les sessions existantes par sécurité
+            await _tokenRepo.RevokeAllUserTokensAsync(user.Id, "reset-password");
+            await _tokenRepo.SaveChangesAsync();
+            return (true, null);
+        }
+
         public async Task<(bool, string?)> ChangePasswordAsync(Guid userId, ChangePasswordRequest req)
         {
             if (req.NewPassword != req.ConfirmNewPassword)

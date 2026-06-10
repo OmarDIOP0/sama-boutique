@@ -10,6 +10,7 @@ import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 const Login = lazy(() => import("@/pages/auth/Login"));
 const Register = lazy(() => import("@/pages/auth/Register"));
 const AuthCallback = lazy(() => import("@/pages/auth/AuthCallback"));
+const ForgotPassword = lazy(() => import("@/pages/auth/ForgotPassword"));
 
 // ── Admin pages ───────────────────────────────────────────────────────────────
 const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
@@ -86,6 +87,10 @@ export const router = createBrowserRouter([
   {
     path: "/register",
     element: <PageSuspense><Register /></PageSuspense>,
+  },
+  {
+    path: "/forgot-password",
+    element: <PageSuspense><ForgotPassword /></PageSuspense>,
   },
   {
     path: "/auth/callback",

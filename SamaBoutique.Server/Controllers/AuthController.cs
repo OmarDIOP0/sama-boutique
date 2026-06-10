@@ -79,6 +79,16 @@ namespace SamaBoutique.Server.Controllers
             return ApiOk(resp!, "Compte créé avec succès");
         }
 
+        /// <summary>Réinitialisation du mot de passe après OTP (mot de passe oublié)</summary>
+        [HttpPost("reset-password-otp")]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> ResetPasswordOtp([FromBody] ResetPasswordOtpRequest req)
+        {
+            var (ok, error) = await _auth.ResetPasswordWithOtpAsync(req);
+            if (!ok) return ApiFail(error!);
+            return ApiOk<object>(null!, "Mot de passe réinitialisé");
+        }
+
         /// <summary>Rafraîchissement du token JWT</summary>
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest req)
